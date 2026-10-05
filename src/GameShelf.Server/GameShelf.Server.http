@@ -1,0 +1,6 @@
+@GameShelf.Server_HostAddress = http://localhost:5217
+
+GET {{GameShelf.Server_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
