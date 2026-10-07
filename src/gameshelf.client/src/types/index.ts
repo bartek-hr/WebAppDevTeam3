@@ -3,6 +3,7 @@
 export interface Member {
   id: string
   userName: string
+  email: string
   isCommittee: boolean
 }
 
