@@ -2,6 +2,7 @@ import {
   boxConditionSchema,
   boxSchema,
   daysUntilReturn,
+  extendLoanBounds,
   extendLoanSchema,
   formatDate,
   getExtendBlockReason,
@@ -9,6 +10,7 @@ import {
   lateSince,
   MAX_LOAN_DAYS,
   maxReturnDate,
+  startLoanBounds,
   startLoanSchema,
   toDateString,
 } from './lendingRules'
@@ -134,6 +136,17 @@ describe('getExtendBlockReason', () => {
   })
 })
 
+test('een lening starten kan met een inleverdatum van morgen tot de maximale termijn', () => {
+  expect(startLoanBounds(today)).toEqual({ earliest: '2026-10-11', latest: '2026-11-07' })
+})
+
+test('verlengen kan vanaf de dag na de inleverdatum tot de maximale termijn vanaf de start', () => {
+  expect(extendLoanBounds({ startDate: '2026-09-30', returnDate: '2026-10-14' })).toEqual({
+    earliest: '2026-10-15',
+    latest: '2026-10-28',
+  })
+})
+
 describe('startLoanSchema', () => {
   const schema = startLoanSchema(today)
   const messageFor = (returnDate: string) =>
@@ -145,7 +158,7 @@ describe('startLoanSchema', () => {
   })
 
   test('de inleverdatum moet na vandaag liggen', () => {
-    expect(messageFor('2026-10-10')).toBe('Kies een datum na 10 oktober 2026')
+    expect(messageFor('2026-10-10')).toBe('Kies een datum vanaf 11 oktober 2026')
   })
 
   test('de inleverdatum mag niet na de maximale termijn liggen', () => {
@@ -169,7 +182,7 @@ describe('extendLoanSchema', () => {
   })
 
   test('de nieuwe datum moet na de huidige inleverdatum liggen', () => {
-    expect(messageFor('2026-10-14')).toBe('Kies een datum na 14 oktober 2026')
+    expect(messageFor('2026-10-14')).toBe('Kies een datum vanaf 15 oktober 2026')
   })
 
   test('de termijn telt vanaf de startdatum, niet vanaf de oude inleverdatum', () => {

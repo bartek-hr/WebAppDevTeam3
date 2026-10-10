@@ -66,24 +66,40 @@ export const boxConditionSchema = boxSchema.pick({ condition: true })
 
 export type BoxConditionUpdate = z.infer<typeof boxConditionSchema>
 
-// Een nieuwe inleverdatum: na `after` en uiterlijk op `latest`
-function returnDateSchema(after: string, latest: string) {
+// Grenzen voor een nieuwe inleverdatum, beide inclusief (ook voor min/max van het datumveld)
+export interface ReturnDateBounds {
+  earliest: string
+  latest: string
+}
+
+// Lening starten: vanaf morgen, hooguit de maximale termijn vanaf vandaag
+export function startLoanBounds(today = new Date()): ReturnDateBounds {
+  return {
+    earliest: toDateString(addDays(today, 1)),
+    latest: toDateString(addDays(today, MAX_LOAN_DAYS)),
+  }
+}
+
+// Verlengen: later dan de huidige inleverdatum, maar binnen de termijn vanaf de start
+export function extendLoanBounds(loan: Pick<Loan, 'startDate' | 'returnDate'>): ReturnDateBounds {
+  return {
+    earliest: toDateString(addDays(parseISO(loan.returnDate), 1)),
+    latest: maxReturnDate(loan.startDate),
+  }
+}
+
+export function returnDateSchema({ earliest, latest }: ReturnDateBounds) {
   return z.object({
     returnDate: z.iso
       .date({ error: 'Kies een inleverdatum' })
-      .refine((date) => date > after, `Kies een datum na ${formatDate(after)}`)
+      .refine((date) => date >= earliest, `Kies een datum vanaf ${formatDate(earliest)}`)
       .refine((date) => date <= latest, `Kies uiterlijk ${formatDate(latest)}`),
   })
 }
 
 export type ReturnDateInput = z.infer<ReturnType<typeof returnDateSchema>>
 
-// Lening starten: vanaf vandaag hooguit de maximale termijn
-export function startLoanSchema(today = new Date()) {
-  return returnDateSchema(toDateString(today), toDateString(addDays(today, MAX_LOAN_DAYS)))
-}
+export const startLoanSchema = (today = new Date()) => returnDateSchema(startLoanBounds(today))
 
-// Verlengen: later dan de huidige inleverdatum, maar binnen de termijn vanaf de start
-export function extendLoanSchema(loan: Pick<Loan, 'startDate' | 'returnDate'>) {
-  return returnDateSchema(loan.returnDate, maxReturnDate(loan.startDate))
-}
+export const extendLoanSchema = (loan: Pick<Loan, 'startDate' | 'returnDate'>) =>
+  returnDateSchema(extendLoanBounds(loan))
