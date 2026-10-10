@@ -380,3 +380,47 @@ test('alleen de eigenaar ziet de knop Teruggebracht', async () => {
     within(cousinLoan).queryByRole('button', { name: 'Teruggebracht' }),
   ).not.toBeInTheDocument()
 })
+
+async function findCommitteeLoans() {
+  const tab = await screen.findByRole('tabpanel', { name: 'Bestuur' })
+  await within(tab).findByRole('link', { name: 'Gloomhaven' })
+  return within(tab).getAllByRole('listitem')
+}
+
+test('een gewoon lid ziet de tab Bestuur niet', async () => {
+  renderRoutes(routes, '/lending/mine?tab=committee')
+
+  expect(await screen.findByRole('tab', { name: 'Mijn dozen' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  expect(await findBoxCard('7 Wonders Duel')).toBeInTheDocument()
+  expect(screen.queryByRole('tab', { name: 'Bestuur' })).not.toBeInTheDocument()
+})
+
+test('het bestuur ziet alle lopende leningen met de te late bovenaan', async () => {
+  loginAs('m1')
+  renderRoutes(routes, '/lending/mine?tab=committee')
+
+  const items = await findCommitteeLoans()
+  expect(items).toHaveLength(4)
+  const [cousin, azul, gloomhaven, wingspan] = items
+  expect(within(cousin).getByRole('link')).toHaveTextContent('Pandemic Legacy: Season 1')
+  expect(within(azul).getByRole('link')).toHaveTextContent('Azul')
+  expect(within(gloomhaven).getByRole('link')).toHaveTextContent('Gloomhaven')
+  expect(within(wingspan).getByRole('link')).toHaveTextContent('Wingspan')
+
+  for (const late of [cousin, azul]) {
+    expect(within(late).getByText('te laat')).toBeInTheDocument()
+    expect(late).toHaveClass('list-group-item-danger')
+  }
+  for (const onTime of [gloomhaven, wingspan]) {
+    expect(within(onTime).queryByText('te laat')).not.toBeInTheDocument()
+    expect(onTime).not.toHaveClass('list-group-item-danger')
+  }
+  expect(await within(cousin).findByText('Eigenaar: thijs')).toBeInTheDocument()
+  expect(within(cousin).getByText('Geleend door: milan')).toBeInTheDocument()
+  expect(within(cousin).getByText('Te laat sinds 5 april 2019')).toBeInTheDocument()
+  expect(within(gloomhaven).getByText('Nog 4 dagen')).toBeInTheDocument()
+  expect(within(wingspan).getByText('verlengd')).toBeInTheDocument()
+})
