@@ -7,6 +7,7 @@ interface ReturnLoanModalProps {
   loan: Loan
   box?: Box
   borrowerName?: string
+  confirmLabel?: string
   onClose: () => void
 }
 
@@ -14,6 +15,7 @@ export default function ReturnLoanModal({
   loan,
   box,
   borrowerName,
+  confirmLabel = 'Teruggebracht',
   onClose,
 }: ReturnLoanModalProps) {
   const returnLoan = useReturnLoan()
@@ -39,7 +41,7 @@ export default function ReturnLoanModal({
           disabled={returnLoan.isPending}
           onClick={() => returnLoan.mutate(loan.id, { onSuccess: onClose })}
         >
-          {returnLoan.isPending ? 'Bezig met registreren…' : 'Teruggebracht'}
+          {returnLoan.isPending ? 'Bezig met registreren…' : confirmLabel}
         </Button>
       </Modal.Footer>
     </Modal>

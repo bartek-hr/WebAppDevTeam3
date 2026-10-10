@@ -8,9 +8,16 @@ interface ReturnLoanButtonProps {
   loan: Loan
   box?: Box
   borrowerName?: string
+  // Het bestuur ontvangt de doos namens de eigenaar
+  label?: string
 }
 
-export default function ReturnLoanButton({ loan, box, borrowerName }: ReturnLoanButtonProps) {
+export default function ReturnLoanButton({
+  loan,
+  box,
+  borrowerName,
+  label = 'Teruggebracht',
+}: ReturnLoanButtonProps) {
   const [isReturning, setIsReturning] = useState(false)
 
   return (
@@ -22,7 +29,7 @@ export default function ReturnLoanButton({ loan, box, borrowerName }: ReturnLoan
         onClick={() => setIsReturning(true)}
       >
         <BoxArrowInLeft className="me-1" />
-        Teruggebracht
+        {label}
       </Button>
 
       {isReturning && (
@@ -30,6 +37,7 @@ export default function ReturnLoanButton({ loan, box, borrowerName }: ReturnLoan
           loan={loan}
           box={box}
           borrowerName={borrowerName}
+          confirmLabel={label}
           onClose={() => setIsReturning(false)}
         />
       )}
