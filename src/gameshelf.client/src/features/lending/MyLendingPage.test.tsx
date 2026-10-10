@@ -1,0 +1,159 @@
+import { act, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { loginAs, renderRoutes } from '../../test/utils'
+import LendingListPage from './LendingListPage'
+import { boxes, loanRequests, resetLendingMocks } from './mocks'
+import MyLendingPage from './MyLendingPage'
+
+const routes = [
+  { path: '/lending', element: <LendingListPage /> },
+  { path: '/lending/mine', element: <MyLendingPage /> },
+]
+
+beforeEach(() => {
+  resetLendingMocks()
+  loginAs('m2')
+})
+
+async function findBoxCard(title: string) {
+  const heading = await screen.findByRole('heading', { name: title })
+  return heading.closest<HTMLElement>('.card')!
+}
+
+async function findRequestItem(card: HTMLElement, userName: string) {
+  return (await within(card).findByText(userName)).closest<HTMLElement>('li')!
+}
+
+async function findMyRequest(title: string) {
+  const tab = await screen.findByRole('tabpanel', { name: 'Mijn aanvragen' })
+  const link = await within(tab).findByRole('link', { name: title })
+  return link.closest<HTMLElement>('li')!
+}
+
+test('opent standaard de tab Mijn dozen met alleen mijn eigen dozen', async () => {
+  renderRoutes(routes, '/lending/mine')
+
+  expect(await screen.findByRole('tab', { name: 'Mijn dozen' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  expect(await findBoxCard('7 Wonders Duel')).toBeInTheDocument()
+  expect(screen.getByRole('heading', { name: 'Catan' })).toBeInTheDocument()
+  expect(screen.queryByRole('heading', { name: 'Gloomhaven' })).not.toBeInTheDocument()
+})
+
+test('goedkeuren wijst de andere aanvragen op dezelfde doos af', async () => {
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending/mine')
+
+  const catan = await findBoxCard('Catan')
+  expect(await within(catan).findAllByText('in afwachting')).toHaveLength(3)
+  // Op volgorde van binnenkomst: noor eerst
+  const [first, second, third] = within(catan).getAllByRole('listitem')
+  expect(first).toHaveTextContent('noor')
+  expect(second).toHaveTextContent('thijs')
+  expect(third).toHaveTextContent('milan')
+
+  await user.click(
+    within(await findRequestItem(catan, 'noor')).getByRole('button', { name: 'Goedkeuren' }),
+  )
+
+  expect(
+    await within(await findRequestItem(catan, 'noor')).findByText('goedgekeurd'),
+  ).toBeInTheDocument()
+  expect(within(await findRequestItem(catan, 'thijs')).getByText('afgewezen')).toBeInTheDocument()
+  expect(within(await findRequestItem(catan, 'milan')).getByText('afgewezen')).toBeInTheDocument()
+  expect(within(catan).queryByRole('button', { name: 'Goedkeuren' })).not.toBeInTheDocument()
+  expect(within(catan).queryByRole('button', { name: 'Afwijzen' })).not.toBeInTheDocument()
+})
+
+test('afwijzen wijst alleen die ene aanvraag af', async () => {
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending/mine')
+
+  const catan = await findBoxCard('Catan')
+  await user.click(
+    await within(await findRequestItem(catan, 'thijs')).findByRole('button', { name: 'Afwijzen' }),
+  )
+
+  expect(
+    await within(await findRequestItem(catan, 'thijs')).findByText('afgewezen'),
+  ).toBeInTheDocument()
+  expect(
+    within(await findRequestItem(catan, 'noor')).getByText('in afwachting'),
+  ).toBeInTheDocument()
+  expect(
+    within(await findRequestItem(catan, 'milan')).getByText('in afwachting'),
+  ).toBeInTheDocument()
+  expect(within(catan).getAllByRole('button', { name: 'Goedkeuren' })).toHaveLength(2)
+})
+
+test('beoordeelde aanvragen hebben geen knoppen meer', async () => {
+  loginAs('m4')
+  renderRoutes(routes, '/lending/mine')
+
+  const twilight = await findBoxCard('Twilight Imperium (4e editie)')
+  expect(
+    within(await findRequestItem(twilight, 'sanne')).getByText('goedgekeurd'),
+  ).toBeInTheDocument()
+  expect(within(await findRequestItem(twilight, 'daan')).getByText('afgewezen')).toBeInTheDocument()
+  expect(within(twilight).queryByRole('button', { name: 'Goedkeuren' })).not.toBeInTheDocument()
+})
+
+test('Mijn aanvragen toont de status van elke aanvraag', async () => {
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending/mine')
+
+  await user.click(await screen.findByRole('tab', { name: 'Mijn aanvragen' }))
+
+  const gloomhaven = await findMyRequest('Gloomhaven')
+  expect(within(gloomhaven).getByText('goedgekeurd')).toBeInTheDocument()
+  expect(await within(gloomhaven).findByText('Eigenaar: noor')).toBeInTheDocument()
+  const twilight = await findMyRequest('Twilight Imperium (4e editie)')
+  expect(within(twilight).getByText('afgewezen')).toBeInTheDocument()
+  expect(
+    within(screen.getByRole('tabpanel', { name: 'Mijn aanvragen' })).getAllByRole('listitem'),
+  ).toHaveLength(2)
+})
+
+test('een nieuwe aanvraag staat in afwachting onder Mijn aanvragen', async () => {
+  const user = userEvent.setup()
+  const { router } = renderRoutes(routes, '/lending')
+
+  const codenames = (await screen.findByRole('link', { name: 'Codenames' })).closest<HTMLElement>(
+    '.card',
+  )!
+  await user.click(await within(codenames).findByRole('button', { name: 'Aanvragen' }))
+  await within(codenames).findByRole('button', { name: 'Aangevraagd' })
+  await act(() => router.navigate('/lending/mine?tab=requests'))
+
+  const request = await findMyRequest('Codenames')
+  expect(within(request).getByText('in afwachting')).toBeInTheDocument()
+  expect(await within(request).findByText('Eigenaar: lotte')).toBeInTheDocument()
+})
+
+test('toont een melding als er nog geen aanvragen zijn', async () => {
+  loanRequests.splice(0, loanRequests.length)
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending/mine')
+
+  expect(await screen.findAllByText('Nog geen aanvragen')).toHaveLength(2)
+  await user.click(screen.getByRole('tab', { name: 'Mijn aanvragen' }))
+  const tab = await screen.findByRole('tabpanel', { name: 'Mijn aanvragen' })
+  expect(await within(tab).findByText(/Je hebt nog geen dozen aangevraagd/)).toBeInTheDocument()
+  expect(within(tab).getByRole('link', { name: 'Naar de uitleenlijst' })).toHaveAttribute(
+    'href',
+    '/lending',
+  )
+})
+
+test('toont een melding als je nog geen dozen aanbiedt', async () => {
+  boxes.splice(0, boxes.length)
+  renderRoutes(routes, '/lending/mine')
+
+  expect(await screen.findByText(/Je biedt nog geen dozen aan/)).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: 'Naar de uitleenlijst' })).toHaveAttribute(
+    'href',
+    '/lending',
+  )
+})
