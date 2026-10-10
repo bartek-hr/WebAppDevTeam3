@@ -226,4 +226,16 @@ export const lendingHandlers: HttpHandler[] = [
     }
     return new HttpResponse(null, { status: 204 })
   }),
+
+  // Aanvragen die ik deed en aanvragen op mijn dozen; de client verdeelt ze over de tabs
+  http.get('/api/requests', ({ request }) => {
+    const me = getCurrentMember(request)
+    if (!me) {
+      return HttpResponse.json({ message: 'Log in om je aanvragen te bekijken.' }, { status: 401 })
+    }
+    const myBoxIds = new Set(boxes.filter((b) => b.ownerId === me.id).map((b) => b.id))
+    return HttpResponse.json(
+      loanRequests.filter((r) => r.requesterId === me.id || myBoxIds.has(r.boxId)),
+    )
+  }),
 ]
