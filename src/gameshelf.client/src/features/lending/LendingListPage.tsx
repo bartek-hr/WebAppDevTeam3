@@ -1,17 +1,20 @@
+import { useState } from 'react'
 import { Alert, Button, Col, Form, Row } from 'react-bootstrap'
-import { Person } from 'react-bootstrap-icons'
+import { Person, PlusLg } from 'react-bootstrap-icons'
 import { useSearchParams } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
 import GameCard from '../../components/GameCard'
 import PageSpinner from '../../components/PageSpinner'
 import { useMembers } from '../auth/api'
 import { useBoxes } from './api'
+import BoxFormModal from './BoxFormModal'
 import { BoxAvailabilityBadge } from './StatusBadges'
 
 // Eigenaar: Rayell (zie docs/TAAKVERDELING.md)
 export default function LendingListPage() {
   const { data: boxes, isLoading, isError, error } = useBoxes()
   const { data: members } = useMembers()
+  const [isOffering, setIsOffering] = useState(false)
   // Filters staan in de URL, net als in de catalogus
   const [searchParams, setSearchParams] = useSearchParams()
   const query = searchParams.get('q') ?? ''
@@ -39,6 +42,10 @@ export default function LendingListPage() {
     <>
       <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
         <h1 className="mb-0">Uitleenlijst</h1>
+        <Button onClick={() => setIsOffering(true)}>
+          <PlusLg className="me-1" />
+          Doos aanbieden
+        </Button>
       </div>
       <p className="text-body-secondary">
         Dozen die leden aan elkaar willen uitlenen. Deze lijst staat los van je collectie: je kiest
@@ -106,6 +113,8 @@ export default function LendingListPage() {
           )}
         </>
       )}
+
+      {isOffering && <BoxFormModal onClose={() => setIsOffering(false)} />}
     </>
   )
 }

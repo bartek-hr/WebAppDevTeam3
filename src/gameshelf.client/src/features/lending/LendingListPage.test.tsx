@@ -65,3 +65,33 @@ test('filters wissen toont weer alle dozen', async () => {
 
   expect(await screen.findByText('8 van 8 dozen')).toBeInTheDocument()
 })
+
+test('een lid biedt een doos aan die niet in zijn collectie hoeft te staan', async () => {
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending')
+
+  await screen.findByText('8 van 8 dozen')
+  await user.click(screen.getByRole('button', { name: 'Doos aanbieden' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Doos aanbieden' })
+  await user.type(await within(dialog).findByRole('combobox'), 'patchwork')
+  await user.click(within(dialog).getByRole('option', { name: /Patchwork/ }))
+  await user.type(within(dialog).getByLabelText('Staat van de doos'), 'Compleet, nooit gespeeld')
+  await user.click(within(dialog).getByRole('button', { name: 'Aanbieden' }))
+
+  expect(await screen.findByText('9 van 9 dozen')).toBeInTheDocument()
+  const newBox = await findBoxCard('Patchwork')
+  expect(within(newBox).getByText('Compleet, nooit gespeeld')).toBeInTheDocument()
+  expect(await within(newBox).findByText('Eigenaar: daan')).toBeInTheDocument()
+})
+
+test('doos aanbieden zonder game en staat toont meldingen', async () => {
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending')
+
+  await user.click(await screen.findByRole('button', { name: 'Doos aanbieden' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Doos aanbieden' })
+  await user.click(within(dialog).getByRole('button', { name: 'Aanbieden' }))
+
+  expect(await within(dialog).findByText('Kies een game')).toBeInTheDocument()
+  expect(within(dialog).getByText('Beschrijf de staat van de doos')).toBeInTheDocument()
+})
