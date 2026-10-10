@@ -381,6 +381,31 @@ export const lendingHandlers: HttpHandler[] = [
     )
   }),
 
+  // Alle lopende leningen voor het bestuur, de te late bovenaan
+  http.get('/api/loans/active', ({ request }) => {
+    const me = getCurrentMember(request)
+    if (!me) {
+      return HttpResponse.json(
+        { message: 'Log in om de lopende leningen te bekijken.' },
+        { status: 401 },
+      )
+    }
+    if (!me.isCommittee) {
+      return HttpResponse.json(
+        { message: 'Alleen het bestuur kan alle lopende leningen bekijken.' },
+        { status: 403 },
+      )
+    }
+    return HttpResponse.json(
+      loans
+        .filter((loan) => !loan.returnedOn)
+        .map(toLoanDto)
+        .sort(
+          (a, b) => Number(b.isLate) - Number(a.isLate) || a.returnDate.localeCompare(b.returnDate),
+        ),
+    )
+  }),
+
   // De eigenaar start de lening als de doos op de clubavond van eigenaar wisselt
   http.post('/api/loans', async ({ request }) => {
     const me = getCurrentMember(request)
