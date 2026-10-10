@@ -238,4 +238,41 @@ export const lendingHandlers: HttpHandler[] = [
       loanRequests.filter((r) => r.requesterId === me.id || myBoxIds.has(r.boxId)),
     )
   }),
+
+  http.post('/api/boxes/:id/requests', ({ request, params }) => {
+    const me = getCurrentMember(request)
+    if (!me) {
+      return HttpResponse.json({ message: 'Log in om een doos aan te vragen.' }, { status: 401 })
+    }
+    const box = boxes.find((b) => b.id === Number(params.id))
+    if (!box) return boxNotFound()
+    if (box.ownerId === me.id) {
+      return HttpResponse.json(
+        { message: 'Je kunt je eigen doos niet aanvragen.' },
+        { status: 403 },
+      )
+    }
+    // Een uitgeleende doos kan pas weer worden uitgeleend als hij terug is
+    if (isBoxOnLoan(box.id)) {
+      return HttpResponse.json(
+        { message: 'Deze doos is uitgeleend en kan pas worden aangevraagd als hij terug is.' },
+        { status: 409 },
+      )
+    }
+    const alreadyRequested = loanRequests.some(
+      (r) => r.boxId === box.id && r.requesterId === me.id && r.status === 'Pending',
+    )
+    if (alreadyRequested) {
+      return HttpResponse.json({ message: 'Je hebt deze doos al aangevraagd.' }, { status: 409 })
+    }
+    const created: LoanRequest = {
+      id: Math.max(0, ...loanRequests.map((r) => r.id)) + 1,
+      boxId: box.id,
+      requesterId: me.id,
+      status: 'Pending',
+      createdOn: toDateString(new Date()),
+    }
+    loanRequests.push(created)
+    return HttpResponse.json(created, { status: 201 })
+  }),
 ]
