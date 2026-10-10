@@ -95,3 +95,42 @@ test('doos aanbieden zonder game en staat toont meldingen', async () => {
   expect(await within(dialog).findByText('Kies een game')).toBeInTheDocument()
   expect(within(dialog).getByText('Beschrijf de staat van de doos')).toBeInTheDocument()
 })
+
+test('een lid past de staat van zijn eigen doos aan', async () => {
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending')
+
+  const ownBox = await findBoxCard('7 Wonders Duel')
+  await user.click(within(ownBox).getByRole('button', { name: 'Bewerken' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Doos bewerken' })
+  expect(
+    within(dialog).getByDisplayValue('7 Wonders Duel (Repos Production, 2015)'),
+  ).toBeInTheDocument()
+  const condition = within(dialog).getByLabelText('Staat van de doos')
+  await user.clear(condition)
+  await user.type(condition, 'Compleet, één kaart beschadigd')
+  await user.click(within(dialog).getByRole('button', { name: 'Opslaan' }))
+
+  expect(await within(ownBox).findByText('Compleet, één kaart beschadigd')).toBeInTheDocument()
+  expect(screen.getByText('8 van 8 dozen')).toBeInTheDocument()
+})
+
+test('alleen bij eigen dozen staan knoppen om ze aan te passen', async () => {
+  renderRoutes(routes, '/lending')
+
+  const otherBox = await findBoxCard('Gloomhaven')
+  expect(within(otherBox).queryByRole('button', { name: 'Bewerken' })).not.toBeInTheDocument()
+  expect(screen.getAllByRole('button', { name: 'Bewerken' })).toHaveLength(2)
+})
+
+test('een uitgeleende eigen doos kan niet worden aangepast', async () => {
+  loginAs('m4')
+  renderRoutes(routes, '/lending')
+
+  const cousinBox = await findBoxCard('Pandemic Legacy: Season 1')
+  expect(await within(cousinBox).findByRole('button', { name: 'Bewerken' })).toBeDisabled()
+  expect(within(cousinBox).getByText('Kan niet zolang de doos is uitgeleend')).toBeInTheDocument()
+
+  const availableBox = await findBoxCard('Twilight Imperium (4e editie)')
+  expect(within(availableBox).getByRole('button', { name: 'Bewerken' })).toBeEnabled()
+})

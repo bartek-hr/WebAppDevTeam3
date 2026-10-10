@@ -6,7 +6,9 @@ import { getErrorMessage } from '../../api/errors'
 import GameCard from '../../components/GameCard'
 import PageSpinner from '../../components/PageSpinner'
 import { useMembers } from '../auth/api'
+import { useAuth } from '../auth/useAuth'
 import { useBoxes } from './api'
+import BoxCardActions from './BoxCardActions'
 import BoxFormModal from './BoxFormModal'
 import { BoxAvailabilityBadge } from './StatusBadges'
 
@@ -14,6 +16,7 @@ import { BoxAvailabilityBadge } from './StatusBadges'
 export default function LendingListPage() {
   const { data: boxes, isLoading, isError, error } = useBoxes()
   const { data: members } = useMembers()
+  const { member } = useAuth()
   const [isOffering, setIsOffering] = useState(false)
   // Filters staan in de URL, net als in de catalogus
   const [searchParams, setSearchParams] = useSearchParams()
@@ -106,6 +109,7 @@ export default function LendingListPage() {
                     </div>
                     <p className="small text-body-secondary mb-2">{box.condition}</p>
                     <BoxAvailabilityBadge isOnLoan={box.isOnLoan} />
+                    {box.ownerId === member?.id && <BoxCardActions box={box} />}
                   </GameCard>
                 </Col>
               ))}
