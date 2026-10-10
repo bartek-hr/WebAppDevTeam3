@@ -142,6 +142,12 @@ function refuseBoxChange(box: BoxRecord, memberId: string, onLoanMessage: string
   }
 }
 
+const hasLoan = (requestId: number) => loans.some((loan) => loan.requestId === requestId)
+
+// Goedgekeurd, maar de doos is nog niet overgedragen op een clubavond
+const isAwaitingLoan = (loanRequest: LoanRequest) =>
+  loanRequest.status === 'Approved' && !hasLoan(loanRequest.id)
+
 const requestNotFound = () =>
   HttpResponse.json({ message: 'Deze aanvraag bestaat niet.' }, { status: 404 })
 
@@ -308,6 +314,16 @@ export const lendingHandlers: HttpHandler[] = [
     if (isBoxOnLoan(loanRequest.boxId)) {
       return HttpResponse.json(
         { message: 'Deze doos is uitgeleend en kan pas weer worden uitgeleend als hij terug is.' },
+        { status: 409 },
+      )
+    }
+    // Eén goedgekeurde aanvraag per keer, anders zouden twee leden dezelfde doos verwachten
+    const awaitingLoan = loanRequests.some(
+      (r) => r.boxId === loanRequest.boxId && isAwaitingLoan(r),
+    )
+    if (awaitingLoan) {
+      return HttpResponse.json(
+        { message: 'Er is al een aanvraag goedgekeurd die nog geen lening is.' },
         { status: 409 },
       )
     }

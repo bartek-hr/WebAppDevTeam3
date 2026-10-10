@@ -100,6 +100,28 @@ test('beoordeelde aanvragen hebben geen knoppen meer', async () => {
   expect(within(twilight).queryByRole('button', { name: 'Goedkeuren' })).not.toBeInTheDocument()
 })
 
+test('goedkeuren kan niet zolang een goedgekeurde aanvraag nog geen lening is', async () => {
+  loanRequests.push({
+    id: 11,
+    boxId: 8,
+    requesterId: 'm6',
+    status: 'Pending',
+    createdOn: '2026-01-01',
+  })
+  loginAs('m4')
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending/mine')
+
+  const twilight = await findBoxCard('Twilight Imperium (4e editie)')
+  const milan = await findRequestItem(twilight, 'milan')
+  await user.click(within(milan).getByRole('button', { name: 'Goedkeuren' }))
+
+  expect(
+    await within(milan).findByText('Er is al een aanvraag goedgekeurd die nog geen lening is.'),
+  ).toBeInTheDocument()
+  expect(within(milan).getByText('in afwachting')).toBeInTheDocument()
+})
+
 test('Mijn aanvragen toont de status van elke aanvraag', async () => {
   const user = userEvent.setup()
   renderRoutes(routes, '/lending/mine')
