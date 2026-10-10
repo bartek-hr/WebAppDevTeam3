@@ -1,4 +1,6 @@
-import { Alert, ListGroup } from 'react-bootstrap'
+import { useState } from 'react'
+import { Alert, Button, ListGroup } from 'react-bootstrap'
+import { CalendarPlus } from 'react-bootstrap-icons'
 import { Link } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
 import PageSpinner from '../../components/PageSpinner'
@@ -6,7 +8,8 @@ import type { Box, Loan } from '../../types'
 import { useMembers } from '../auth/api'
 import { useAuth } from '../auth/useAuth'
 import { useBoxes, useLoans } from './api'
-import { daysUntilReturn, formatDate, lateSince } from './lendingRules'
+import ExtendLoanModal from './ExtendLoanModal'
+import { daysUntilReturn, formatDate, getExtendBlockReason, lateSince } from './lendingRules'
 import { LoanStatusBadge } from './StatusBadges'
 
 interface LoanDueTextProps {
@@ -33,6 +36,37 @@ function LoanDueText({ loan }: LoanDueTextProps) {
     <div className="small">
       {days === 0 ? 'Vandaag inleveren' : `Nog ${days} ${days === 1 ? 'dag' : 'dagen'}`}
     </div>
+  )
+}
+
+interface ExtendLoanButtonProps {
+  loan: Loan
+  box?: Box
+}
+
+// Verlengen kan één keer en niet als je al te laat bent; anders staat de reden onder de knop
+function ExtendLoanButton({ loan, box }: ExtendLoanButtonProps) {
+  const [isExtending, setIsExtending] = useState(false)
+  const blockReason = getExtendBlockReason(loan)
+
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="outline-primary"
+        className="mt-2"
+        disabled={!!blockReason}
+        onClick={() => setIsExtending(true)}
+      >
+        <CalendarPlus className="me-1" />
+        Verlengen
+      </Button>
+      {blockReason && <div className="small text-body-secondary mt-1">{blockReason}</div>}
+
+      {isExtending && (
+        <ExtendLoanModal loan={loan} box={box} onClose={() => setIsExtending(false)} />
+      )}
+    </>
   )
 }
 
@@ -65,6 +99,7 @@ function LoanItem({ loan, box, isLender, otherName }: LoanItemProps) {
         </div>
         <LoanStatusBadge loan={loan} />
       </div>
+      {!isLender && !loan.returnedOn && <ExtendLoanButton loan={loan} box={box} />}
     </ListGroup.Item>
   )
 }

@@ -1,8 +1,9 @@
 import { act, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { addDays } from 'date-fns'
 import { loginAs, renderRoutes } from '../../test/utils'
 import LendingListPage from './LendingListPage'
-import { suggestedReturnDate } from './lendingRules'
+import { formatDate, suggestedReturnDate, toDateString } from './lendingRules'
 import { boxes, loanRequests, resetLendingMocks } from './mocks'
 import MyLendingPage from './MyLendingPage'
 
@@ -30,6 +31,8 @@ async function findMyRequest(title: string) {
   const link = await within(tab).findByRole('link', { name: title })
   return link.closest<HTMLElement>('li')!
 }
+
+const daysFromToday = (days: number) => toDateString(addDays(new Date(), days))
 
 async function findLoan(section: 'Uitgeleend' | 'Geleend', title: string) {
   const region = await screen.findByRole('region', { name: section })
@@ -239,6 +242,8 @@ test('de doos bij de neef staat te laat', async () => {
   expect(within(cousinLoan).getByText('te laat')).toBeInTheDocument()
   expect(within(cousinLoan).getByText('Van 7 maart 2019 tot 4 april 2019')).toBeInTheDocument()
   expect(within(cousinLoan).getByText('Te laat sinds 5 april 2019')).toBeInTheDocument()
+  expect(within(cousinLoan).getByRole('button', { name: 'Verlengen' })).toBeDisabled()
+  expect(within(cousinLoan).getByText('Te laat: verlengen kan niet meer')).toBeInTheDocument()
 })
 
 test('een teruggebrachte doos staat als teruggebracht in de lijst', async () => {
@@ -252,4 +257,57 @@ test('een teruggebrachte doos staat als teruggebracht in de lijst', async () => 
   expect(
     within(screen.getByRole('region', { name: 'Geleend' })).getAllByRole('listitem'),
   ).toHaveLength(1)
+})
+
+test('de lener verlengt een lening één keer', async () => {
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending/mine?tab=loans')
+
+  const gloomhaven = await findLoan('Geleend', 'Gloomhaven')
+  await user.click(within(gloomhaven).getByRole('button', { name: 'Verlengen' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Lening verlengen' })
+  expect(
+    within(dialog).getByText(`Uiterlijk ${formatDate(daysFromToday(18))}, 28 dagen na de start.`),
+  ).toBeInTheDocument()
+  const returnDate = within(dialog).getByLabelText('Nieuwe inleverdatum')
+  await user.clear(returnDate)
+  await user.type(returnDate, daysFromToday(7))
+  await user.click(within(dialog).getByRole('button', { name: 'Verlengen' }))
+
+  expect(await within(gloomhaven).findByText('verlengd')).toBeInTheDocument()
+  expect(within(gloomhaven).getByText('Nog 7 dagen')).toBeInTheDocument()
+  expect(within(gloomhaven).getByRole('button', { name: 'Verlengen' })).toBeDisabled()
+  expect(
+    within(gloomhaven).getByText('Je hebt deze lening al een keer verlengd'),
+  ).toBeInTheDocument()
+})
+
+test('verlengen voorbij de maximale termijn geeft een melding', async () => {
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending/mine?tab=loans')
+
+  const gloomhaven = await findLoan('Geleend', 'Gloomhaven')
+  await user.click(within(gloomhaven).getByRole('button', { name: 'Verlengen' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Lening verlengen' })
+  const returnDate = within(dialog).getByLabelText('Nieuwe inleverdatum')
+  await user.clear(returnDate)
+  await user.type(returnDate, daysFromToday(19))
+  await user.click(within(dialog).getByRole('button', { name: 'Verlengen' }))
+
+  expect(
+    await within(dialog).findByText(`Kies uiterlijk ${formatDate(daysFromToday(18))}`),
+  ).toBeInTheDocument()
+  expect(within(gloomhaven).queryByText('verlengd')).not.toBeInTheDocument()
+})
+
+test('een al verlengde lening kan niet nog een keer verlengd worden', async () => {
+  loginAs('m3')
+  renderRoutes(routes, '/lending/mine?tab=loans')
+
+  const wingspan = await findLoan('Geleend', 'Wingspan')
+  expect(within(wingspan).getByRole('button', { name: 'Verlengen' })).toBeDisabled()
+  expect(within(wingspan).getByText('Je hebt deze lening al een keer verlengd')).toBeInTheDocument()
+  // Bij wat ik uitleen kan ik niet verlengen, dat doet de lener
+  const gloomhaven = await findLoan('Uitgeleend', 'Gloomhaven')
+  expect(within(gloomhaven).queryByRole('button', { name: 'Verlengen' })).not.toBeInTheDocument()
 })
