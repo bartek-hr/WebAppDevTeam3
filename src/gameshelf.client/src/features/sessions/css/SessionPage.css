@@ -1,0 +1,30 @@
+.sessions-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sessions-table th,
+.sessions-table td {
+  padding: 12px 24px;
+  text-align: left;
+}
+
+.sessions-table th {
+  border-bottom: 2px solid #ddd;
+}
+
+.sessions-table td {
+  border-bottom: 1px solid #eee;
+}
+.sessions-table button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 4px;
+  background-color: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.sessions-table button:hover{
+   background-color: #1d4ed8;
+}
