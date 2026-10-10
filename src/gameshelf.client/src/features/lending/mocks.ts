@@ -3,7 +3,13 @@ import { http, HttpResponse, type HttpHandler } from 'msw'
 import type { Box, Loan, LoanRequest, LoanRequestStatus } from '../../types'
 import { getCurrentMember } from '../auth/mocks'
 import { games } from '../catalogue/mocks'
-import { boxConditionSchema, boxSchema, isLoanLate, toDateString } from './lendingRules'
+import {
+  boxConditionSchema,
+  boxSchema,
+  isLoanLate,
+  startLoanSchema,
+  toDateString,
+} from './lendingRules'
 
 // Eigenaar: Rayell. Nep-endpoints voor deze feature (alleen actief als VITE_USE_MOCKS=true).
 
@@ -163,6 +169,11 @@ function refuseDecision(loanRequest: LoanRequest, memberId: string) {
   if (loanRequest.status !== 'Pending') {
     return HttpResponse.json({ message: 'Over deze aanvraag is al beslist.' }, { status: 409 })
   }
+}
+
+interface StartLoanBody {
+  requestId: number
+  returnDate: string
 }
 
 const ownerOf = (boxId: number) => boxes.find((b) => b.id === boxId)?.ownerId
@@ -363,5 +374,57 @@ export const lendingHandlers: HttpHandler[] = [
         .filter((loan) => loan.borrowerId === me.id || ownerOf(loan.boxId) === me.id)
         .map(toLoanDto),
     )
+  }),
+
+  // De eigenaar start de lening als de doos op de clubavond van eigenaar wisselt
+  http.post('/api/loans', async ({ request }) => {
+    const me = getCurrentMember(request)
+    if (!me) {
+      return HttpResponse.json({ message: 'Log in om een lening te starten.' }, { status: 401 })
+    }
+    const body = (await request.json()) as StartLoanBody
+    const loanRequest = loanRequests.find((r) => r.id === Number(body.requestId))
+    if (!loanRequest) return requestNotFound()
+    const box = boxes.find((b) => b.id === loanRequest.boxId)
+    if (!box) return boxNotFound()
+    if (box.ownerId !== me.id) {
+      return HttpResponse.json(
+        { message: 'Alleen de eigenaar van de doos kan een lening starten.' },
+        { status: 403 },
+      )
+    }
+    if (loanRequest.status !== 'Approved') {
+      return HttpResponse.json(
+        { message: 'Een lening start alleen vanuit een goedgekeurde aanvraag.' },
+        { status: 409 },
+      )
+    }
+    if (hasLoan(loanRequest.id)) {
+      return HttpResponse.json(
+        { message: 'Voor deze aanvraag is de lening al gestart.' },
+        { status: 409 },
+      )
+    }
+    if (isBoxOnLoan(box.id)) {
+      return HttpResponse.json(
+        { message: 'Deze doos is uitgeleend en kan pas weer worden uitgeleend als hij terug is.' },
+        { status: 409 },
+      )
+    }
+    const parsed = startLoanSchema().safeParse(body)
+    if (!parsed.success) {
+      return HttpResponse.json({ message: parsed.error.issues[0].message }, { status: 400 })
+    }
+    const created: LoanRecord = {
+      id: Math.max(0, ...loans.map((loan) => loan.id)) + 1,
+      boxId: box.id,
+      borrowerId: loanRequest.requesterId,
+      startDate: toDateString(new Date()),
+      returnDate: parsed.data.returnDate,
+      isExtended: false,
+      requestId: loanRequest.id,
+    }
+    loans.push(created)
+    return HttpResponse.json(toLoanDto(created), { status: 201 })
   }),
 ]
