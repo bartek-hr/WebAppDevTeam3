@@ -3,7 +3,7 @@ import { http, HttpResponse, type HttpHandler } from 'msw'
 import type { Box, Loan, LoanRequest, LoanRequestStatus } from '../../types'
 import { getCurrentMember } from '../auth/mocks'
 import { games } from '../catalogue/mocks'
-import { boxSchema, isLoanLate, toDateString } from './lendingRules'
+import { boxConditionSchema, boxSchema, isLoanLate, toDateString } from './lendingRules'
 
 // Eigenaar: Rayell. Nep-endpoints voor deze feature (alleen actief als VITE_USE_MOCKS=true).
 
@@ -115,13 +115,31 @@ export function resetLendingMocks() {
   loans.splice(0, loans.length, ...seedLoans())
 }
 
+const isBoxOnLoan = (boxId: number) =>
+  loans.some((loan) => loan.boxId === boxId && !loan.returnedOn)
+
 export function toBoxDto(box: BoxRecord): Box {
-  const isOnLoan = loans.some((loan) => loan.boxId === box.id && !loan.returnedOn)
-  return { ...box, isOnLoan }
+  return { ...box, isOnLoan: isBoxOnLoan(box.id) }
 }
 
 export function toLoanDto({ requestId: _requestId, ...loan }: LoanRecord): Loan {
   return { ...loan, isLate: isLoanLate(loan) }
+}
+
+const boxNotFound = () =>
+  HttpResponse.json({ message: 'Deze doos staat niet op de uitleenlijst.' }, { status: 404 })
+
+// Alleen de eigenaar mag zijn doos aanpassen of weghalen, en niet zolang hij is uitgeleend
+function refuseBoxChange(box: BoxRecord, memberId: string, onLoanMessage: string) {
+  if (box.ownerId !== memberId) {
+    return HttpResponse.json(
+      { message: 'Je kunt alleen je eigen dozen aanpassen.' },
+      { status: 403 },
+    )
+  }
+  if (isBoxOnLoan(box.id)) {
+    return HttpResponse.json({ message: onLoanMessage }, { status: 409 })
+  }
 }
 
 export const lendingHandlers: HttpHandler[] = [
@@ -160,5 +178,26 @@ export const lendingHandlers: HttpHandler[] = [
     }
     boxes.push(created)
     return HttpResponse.json(toBoxDto(created), { status: 201 })
+  }),
+
+  http.put('/api/boxes/:id', async ({ request, params }) => {
+    const me = getCurrentMember(request)
+    if (!me) {
+      return HttpResponse.json({ message: 'Log in om je doos aan te passen.' }, { status: 401 })
+    }
+    const box = boxes.find((b) => b.id === Number(params.id))
+    if (!box) return boxNotFound()
+    const refusal = refuseBoxChange(
+      box,
+      me.id,
+      'Deze doos is uitgeleend en kan pas worden aangepast als hij terug is.',
+    )
+    if (refusal) return refusal
+    const parsed = boxConditionSchema.safeParse(await request.json())
+    if (!parsed.success) {
+      return HttpResponse.json({ message: parsed.error.issues[0].message }, { status: 400 })
+    }
+    box.condition = parsed.data.condition
+    return HttpResponse.json(toBoxDto(box))
   }),
 ]
