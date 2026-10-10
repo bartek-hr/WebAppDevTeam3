@@ -142,6 +142,23 @@ function refuseBoxChange(box: BoxRecord, memberId: string, onLoanMessage: string
   }
 }
 
+const requestNotFound = () =>
+  HttpResponse.json({ message: 'Deze aanvraag bestaat niet.' }, { status: 404 })
+
+// Alleen de eigenaar van de doos beslist over een aanvraag, en alleen zolang hij in afwachting is
+function refuseDecision(loanRequest: LoanRequest, memberId: string) {
+  const box = boxes.find((b) => b.id === loanRequest.boxId)
+  if (box?.ownerId !== memberId) {
+    return HttpResponse.json(
+      { message: 'Alleen de eigenaar van de doos kan deze aanvraag goedkeuren of afwijzen.' },
+      { status: 403 },
+    )
+  }
+  if (loanRequest.status !== 'Pending') {
+    return HttpResponse.json({ message: 'Over deze aanvraag is al beslist.' }, { status: 409 })
+  }
+}
+
 export const lendingHandlers: HttpHandler[] = [
   http.get('/api/boxes', ({ request }) => {
     if (!getCurrentMember(request)) {
@@ -274,5 +291,33 @@ export const lendingHandlers: HttpHandler[] = [
     }
     loanRequests.push(created)
     return HttpResponse.json(created, { status: 201 })
+  }),
+
+  http.post('/api/requests/:id/approve', ({ request, params }) => {
+    const me = getCurrentMember(request)
+    if (!me) {
+      return HttpResponse.json(
+        { message: 'Log in om een aanvraag goed te keuren.' },
+        { status: 401 },
+      )
+    }
+    const loanRequest = loanRequests.find((r) => r.id === Number(params.id))
+    if (!loanRequest) return requestNotFound()
+    const refusal = refuseDecision(loanRequest, me.id)
+    if (refusal) return refusal
+    if (isBoxOnLoan(loanRequest.boxId)) {
+      return HttpResponse.json(
+        { message: 'Deze doos is uitgeleend en kan pas weer worden uitgeleend als hij terug is.' },
+        { status: 409 },
+      )
+    }
+    loanRequest.status = 'Approved'
+    // De doos gaat naar één lid, dus de andere openstaande aanvragen worden afgewezen
+    for (const other of loanRequests) {
+      if (other.boxId === loanRequest.boxId && other.status === 'Pending') {
+        other.status = 'Rejected'
+      }
+    }
+    return HttpResponse.json(loanRequest)
   }),
 ]
