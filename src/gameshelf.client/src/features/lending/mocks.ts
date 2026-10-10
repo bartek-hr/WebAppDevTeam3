@@ -6,6 +6,8 @@ import { games } from '../catalogue/mocks'
 import {
   boxConditionSchema,
   boxSchema,
+  extendLoanSchema,
+  getExtendBlockReason,
   isLoanLate,
   startLoanSchema,
   toDateString,
@@ -175,6 +177,9 @@ interface StartLoanBody {
   requestId: number
   returnDate: string
 }
+
+const loanNotFound = () =>
+  HttpResponse.json({ message: 'Deze lening bestaat niet.' }, { status: 404 })
 
 const ownerOf = (boxId: number) => boxes.find((b) => b.id === boxId)?.ownerId
 
@@ -426,5 +431,31 @@ export const lendingHandlers: HttpHandler[] = [
     }
     loans.push(created)
     return HttpResponse.json(toLoanDto(created), { status: 201 })
+  }),
+
+  http.post('/api/loans/:id/extend', async ({ request, params }) => {
+    const me = getCurrentMember(request)
+    if (!me) {
+      return HttpResponse.json({ message: 'Log in om je lening te verlengen.' }, { status: 401 })
+    }
+    const loan = loans.find((l) => l.id === Number(params.id))
+    if (!loan) return loanNotFound()
+    if (loan.borrowerId !== me.id) {
+      return HttpResponse.json(
+        { message: 'Alleen wie de doos leent kan de lening verlengen.' },
+        { status: 403 },
+      )
+    }
+    const blockReason = getExtendBlockReason(loan)
+    if (blockReason) {
+      return HttpResponse.json({ message: `${blockReason}.` }, { status: 409 })
+    }
+    const parsed = extendLoanSchema(loan).safeParse(await request.json())
+    if (!parsed.success) {
+      return HttpResponse.json({ message: parsed.error.issues[0].message }, { status: 400 })
+    }
+    loan.returnDate = parsed.data.returnDate
+    loan.isExtended = true
+    return HttpResponse.json(toLoanDto(loan))
   }),
 ]
