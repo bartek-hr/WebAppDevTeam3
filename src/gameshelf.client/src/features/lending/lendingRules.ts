@@ -1,7 +1,7 @@
 import { addDays, differenceInCalendarDays, format, parseISO } from 'date-fns'
 import { nl } from 'date-fns/locale'
 import { z } from 'zod'
-import type { Loan } from '../../types'
+import type { Loan, LoanRequest } from '../../types'
 
 // Maximale uitleentermijn in dagen, constant tot de backend hem levert
 export const MAX_LOAN_DAYS = 28
@@ -34,6 +34,16 @@ export function daysUntilReturn(returnDate: string, today = new Date()) {
 // De eerste dag dat een lening te laat is: de dag na de inleverdatum
 export function lateSince(returnDate: string) {
   return toDateString(addDays(parseISO(returnDate), 1))
+}
+
+// De Loan-DTO kent geen requestId: gestart = de aanvrager leende deze doos op of na de aanvraagdatum
+export function isLoanStarted(request: LoanRequest, loans: Loan[]) {
+  return loans.some(
+    (loan) =>
+      loan.boxId === request.boxId &&
+      loan.borrowerId === request.requesterId &&
+      loan.startDate >= request.createdOn,
+  )
 }
 
 type ExtendableLoan = Pick<Loan, 'startDate' | 'returnDate' | 'returnedOn' | 'isExtended'>

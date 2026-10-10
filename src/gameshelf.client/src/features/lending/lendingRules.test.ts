@@ -7,6 +7,7 @@ import {
   formatDate,
   getExtendBlockReason,
   isLoanLate,
+  isLoanStarted,
   lateSince,
   MAX_LOAN_DAYS,
   maxReturnDate,
@@ -93,6 +94,39 @@ describe('daysUntilReturn', () => {
 
 test('lateSince is de dag na de inleverdatum', () => {
   expect(lateSince('2019-04-04')).toBe('2019-04-05')
+})
+
+describe('isLoanStarted', () => {
+  const request = {
+    id: 1,
+    boxId: 8,
+    requesterId: 'm1',
+    status: 'Approved' as const,
+    createdOn: '2026-10-06',
+  }
+  const loan = {
+    id: 1,
+    boxId: 8,
+    borrowerId: 'm1',
+    startDate: '2026-10-08',
+    returnDate: '2026-10-22',
+    isExtended: false,
+    isLate: false,
+  }
+
+  test('is gestart als de aanvrager de doos na de aanvraag leende', () => {
+    expect(isLoanStarted(request, [loan])).toBe(true)
+  })
+
+  test('is nog niet gestart zonder lening voor deze doos en aanvrager', () => {
+    expect(isLoanStarted(request, [])).toBe(false)
+    expect(isLoanStarted(request, [{ ...loan, borrowerId: 'm2' }])).toBe(false)
+    expect(isLoanStarted(request, [{ ...loan, boxId: 3 }])).toBe(false)
+  })
+
+  test('een eerdere lening van dezelfde doos telt niet mee', () => {
+    expect(isLoanStarted(request, [{ ...loan, startDate: '2026-09-01' }])).toBe(false)
+  })
 })
 
 describe('getExtendBlockReason', () => {
