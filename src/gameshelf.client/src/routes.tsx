@@ -1,5 +1,7 @@
 import { createBrowserRouter } from 'react-router-dom'
 import Layout from './components/Layout'
+import NotFoundPage from './components/NotFoundPage'
+import ProtectedRoute from './features/auth/ProtectedRoute'
 import LoginPage from './features/auth/LoginPage'
 import RegisterPage from './features/auth/RegisterPage'
 import HomePage from './features/home/HomePage'
@@ -23,25 +25,31 @@ export const router = createBrowserRouter([
   { path: '/login', element: <LoginPage /> },
   { path: '/register', element: <RegisterPage /> },
   {
-    element: <Layout />,
+    element: <ProtectedRoute />,
     children: [
-      { path: '/', element: <HomePage /> },
-      { path: '/catalogue', element: <CataloguePage /> },
-      { path: '/catalogue/new', element: <AddGamePage /> },
-      { path: '/catalogue/:id', element: <GameDetailPage /> },
-      { path: '/collection', element: <CollectionPage /> },
-      { path: '/members/:id', element: <MemberProfilePage /> },
-      { path: '/shelves', element: <ShelvesPage /> },
-      { path: '/shelves/:id', element: <ShelfDetailPage /> },
-      { path: '/lending', element: <LendingListPage /> },
-      { path: '/lending/mine', element: <MyLendingPage /> },
-      { path: '/offers', element: <MyOffersPage /> },
-      { path: '/sessions', element: <SessionsPage /> },
-      { path: '/sessions/new', element: <SessionFormPage /> },
-      { path: '/sessions/:id', element: <SessionDetailPage /> },
-      { path: '/sessions/:id/edit', element: <SessionFormPage /> },
-      { path: '/wishlists', element: <WishlistsPage /> },
-      { path: '/wishlists/mine', element: <MyWishlistPage /> },
+      {
+        element: <Layout />,
+        children: [
+          { path: '/', element: <HomePage /> },
+          { path: '/catalogue', element: <CataloguePage /> },
+          { path: '/catalogue/new', element: <AddGamePage /> },
+          { path: '/catalogue/:id', element: <GameDetailPage /> },
+          { path: '/collection', element: <CollectionPage /> },
+          { path: '/members/:id', element: <MemberProfilePage /> },
+          { path: '/shelves', element: <ShelvesPage /> },
+          { path: '/shelves/:id', element: <ShelfDetailPage /> },
+          { path: '/lending', element: <LendingListPage /> },
+          { path: '/lending/mine', element: <MyLendingPage /> },
+          { path: '/offers', element: <MyOffersPage /> },
+          { path: '/sessions', element: <SessionsPage /> },
+          { path: '/sessions/new', element: <SessionFormPage /> },
+          { path: '/sessions/:id', element: <SessionDetailPage /> },
+          { path: '/sessions/:id/edit', element: <SessionFormPage /> },
+          { path: '/wishlists', element: <WishlistsPage /> },
+          { path: '/wishlists/mine', element: <MyWishlistPage /> },
+          { path: '*', element: <NotFoundPage /> },
+        ],
+      },
     ],
   },
 ])
