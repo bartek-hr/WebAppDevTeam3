@@ -458,4 +458,28 @@ export const lendingHandlers: HttpHandler[] = [
     loan.isExtended = true
     return HttpResponse.json(toLoanDto(loan))
   }),
+
+  // De eigenaar of het bestuur neemt de doos terug in ontvangst, daarna is hij weer beschikbaar
+  http.post('/api/loans/:id/return', ({ request, params }) => {
+    const me = getCurrentMember(request)
+    if (!me) {
+      return HttpResponse.json(
+        { message: 'Log in om een teruggebrachte doos te registreren.' },
+        { status: 401 },
+      )
+    }
+    const loan = loans.find((l) => l.id === Number(params.id))
+    if (!loan) return loanNotFound()
+    if (ownerOf(loan.boxId) !== me.id && !me.isCommittee) {
+      return HttpResponse.json(
+        { message: 'Alleen de eigenaar van de doos of het bestuur kan dit registreren.' },
+        { status: 403 },
+      )
+    }
+    if (loan.returnedOn) {
+      return HttpResponse.json({ message: 'Deze doos is al teruggebracht.' }, { status: 409 })
+    }
+    loan.returnedOn = toDateString(new Date())
+    return HttpResponse.json(toLoanDto(loan))
+  }),
 ]
