@@ -1,10 +1,10 @@
-import { act, screen, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { addDays } from 'date-fns'
 import { loginAs, renderRoutes } from '../../test/utils'
 import LendingListPage from './LendingListPage'
 import { formatDate, suggestedReturnDate, toDateString } from './lendingRules'
-import { boxes, loanRequests, resetLendingMocks } from './mocks'
+import { boxes, loanRequests, loans, resetLendingMocks } from './mocks'
 import MyLendingPage from './MyLendingPage'
 
 const routes = [
@@ -423,4 +423,39 @@ test('het bestuur ziet alle lopende leningen met de te late bovenaan', async () 
   expect(within(cousin).getByText('Te laat sinds 5 april 2019')).toBeInTheDocument()
   expect(within(gloomhaven).getByText('Nog 4 dagen')).toBeInTheDocument()
   expect(within(wingspan).getByText('verlengd')).toBeInTheDocument()
+})
+
+test('het bestuur ontvangt de doos bij de neef terug', async () => {
+  loginAs('m1')
+  const user = userEvent.setup()
+  const { router } = renderRoutes(routes, '/lending/mine?tab=committee')
+
+  const [cousin] = await findCommitteeLoans()
+  await user.click(within(cousin).getByRole('button', { name: 'Terug ontvangen' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Doos teruggebracht' })
+  expect(
+    within(dialog).getByText(/Heeft milan Pandemic Legacy: Season 1 teruggebracht\?/),
+  ).toBeInTheDocument()
+  await user.click(within(dialog).getByRole('button', { name: 'Terug ontvangen' }))
+
+  const tab = screen.getByRole('tabpanel', { name: 'Bestuur' })
+  await waitFor(() => expect(within(tab).getAllByRole('listitem')).toHaveLength(3))
+  expect(
+    within(tab).queryByRole('link', { name: 'Pandemic Legacy: Season 1' }),
+  ).not.toBeInTheDocument()
+
+  await act(() => router.navigate('/lending'))
+  const box = (
+    await screen.findByRole('link', { name: 'Pandemic Legacy: Season 1' })
+  ).closest<HTMLElement>('.card')!
+  expect(await within(box).findByText('beschikbaar')).toBeInTheDocument()
+})
+
+test('toont een melding als er geen lopende leningen zijn', async () => {
+  loans.splice(0, loans.length)
+  loginAs('m5')
+  renderRoutes(routes, '/lending/mine?tab=committee')
+
+  const tab = await screen.findByRole('tabpanel', { name: 'Bestuur' })
+  expect(await within(tab).findByText('Er zijn geen lopende leningen.')).toBeInTheDocument()
 })
