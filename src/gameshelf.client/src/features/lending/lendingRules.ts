@@ -6,6 +6,9 @@ import type { Loan, LoanRequest } from '../../types'
 // Maximale uitleentermijn in dagen, constant tot de backend hem levert
 export const MAX_LOAN_DAYS = 28
 
+// Standaard leentermijn die het formulier voorstelt
+export const SUGGESTED_LOAN_DAYS = 14
+
 // Datums gaan als 'yyyy-MM-dd' over de API
 export function toDateString(date: Date) {
   return format(date, 'yyyy-MM-dd')
@@ -88,6 +91,13 @@ export function startLoanBounds(today = new Date()): ReturnDateBounds {
     earliest: toDateString(addDays(today, 1)),
     latest: toDateString(addDays(today, MAX_LOAN_DAYS)),
   }
+}
+
+// Voorstel bij het starten: twee weken, maar nooit voorbij de maximale termijn
+export function suggestedReturnDate(today = new Date()) {
+  const suggested = toDateString(addDays(today, SUGGESTED_LOAN_DAYS))
+  const { latest } = startLoanBounds(today)
+  return suggested < latest ? suggested : latest
 }
 
 // Verlengen: later dan de huidige inleverdatum, maar binnen de termijn vanaf de start

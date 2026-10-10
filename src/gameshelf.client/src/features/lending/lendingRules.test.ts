@@ -13,6 +13,7 @@ import {
   maxReturnDate,
   startLoanBounds,
   startLoanSchema,
+  suggestedReturnDate,
   toDateString,
 } from './lendingRules'
 
@@ -172,6 +173,10 @@ describe('getExtendBlockReason', () => {
 
 test('een lening starten kan met een inleverdatum van morgen tot de maximale termijn', () => {
   expect(startLoanBounds(today)).toEqual({ earliest: '2026-10-11', latest: '2026-11-07' })
+})
+
+test('stelt bij het starten een inleverdatum over twee weken voor', () => {
+  expect(suggestedReturnDate(today)).toBe('2026-10-24')
 })
 
 test('verlengen kan vanaf de dag na de inleverdatum tot de maximale termijn vanaf de start', () => {
