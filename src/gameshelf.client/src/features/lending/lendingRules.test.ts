@@ -1,8 +1,11 @@
 import {
   boxConditionSchema,
   boxSchema,
+  daysUntilReturn,
   formatDate,
+  getExtendBlockReason,
   isLoanLate,
+  lateSince,
   MAX_LOAN_DAYS,
   maxReturnDate,
   toDateString,
@@ -70,5 +73,61 @@ describe('formatDate', () => {
   test('schrijft de datum uit in het Nederlands', () => {
     expect(formatDate('2019-03-07')).toBe('7 maart 2019')
     expect(formatDate('2026-10-10')).toBe('10 oktober 2026')
+  })
+})
+
+describe('daysUntilReturn', () => {
+  test('telt de dagen tot de inleverdatum', () => {
+    expect(daysUntilReturn('2026-10-14', today)).toBe(4)
+    expect(daysUntilReturn('2026-10-10', today)).toBe(0)
+  })
+
+  test('is negatief als de inleverdatum voorbij is', () => {
+    expect(daysUntilReturn('2026-10-08', today)).toBe(-2)
+  })
+})
+
+test('lateSince is de dag na de inleverdatum', () => {
+  expect(lateSince('2019-04-04')).toBe('2019-04-05')
+})
+
+describe('getExtendBlockReason', () => {
+  const loan = {
+    startDate: '2026-09-30',
+    returnDate: '2026-10-14',
+    isExtended: false,
+  }
+
+  test('een lopende lening binnen de termijn mag verlengd worden', () => {
+    expect(getExtendBlockReason(loan, today)).toBeNull()
+  })
+
+  test('een teruggebrachte lening kan niet verlengd worden', () => {
+    expect(getExtendBlockReason({ ...loan, returnedOn: '2026-10-09' }, today)).toBe(
+      'Deze doos is al teruggebracht',
+    )
+  })
+
+  test('verlengen kan maar één keer', () => {
+    expect(getExtendBlockReason({ ...loan, isExtended: true }, today)).toBe(
+      'Je hebt deze lening al een keer verlengd',
+    )
+  })
+
+  test('een lening die te laat is kan niet verlengd worden', () => {
+    expect(getExtendBlockReason({ ...loan, returnDate: '2026-10-09' }, today)).toBe(
+      'Te laat: verlengen kan niet meer',
+    )
+  })
+
+  test('de doos bij de neef is te laat', () => {
+    const cousinLoan = { startDate: '2019-03-07', returnDate: '2019-04-04', isExtended: false }
+    expect(getExtendBlockReason(cousinLoan, today)).toBe('Te laat: verlengen kan niet meer')
+  })
+
+  test('niet verlengen als de inleverdatum al op het maximum ligt', () => {
+    expect(getExtendBlockReason({ ...loan, returnDate: '2026-10-28' }, today)).toBe(
+      'De maximale uitleentermijn is al bereikt',
+    )
   })
 })

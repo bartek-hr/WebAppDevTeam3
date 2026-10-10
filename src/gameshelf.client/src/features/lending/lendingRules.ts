@@ -26,6 +26,29 @@ export function isLoanLate(loan: Pick<Loan, 'returnDate' | 'returnedOn'>, today 
   return !loan.returnedOn && differenceInCalendarDays(today, parseISO(loan.returnDate)) > 0
 }
 
+// Aantal dagen tot de inleverdatum; negatief als die al voorbij is
+export function daysUntilReturn(returnDate: string, today = new Date()) {
+  return differenceInCalendarDays(parseISO(returnDate), today)
+}
+
+// De eerste dag dat een lening te laat is: de dag na de inleverdatum
+export function lateSince(returnDate: string) {
+  return toDateString(addDays(parseISO(returnDate), 1))
+}
+
+type ExtendableLoan = Pick<Loan, 'startDate' | 'returnDate' | 'returnedOn' | 'isExtended'>
+
+// Waarom deze lening niet verlengd kan worden, of null als het wel kan
+export function getExtendBlockReason(loan: ExtendableLoan, today = new Date()) {
+  if (loan.returnedOn) return 'Deze doos is al teruggebracht'
+  if (loan.isExtended) return 'Je hebt deze lening al een keer verlengd'
+  if (isLoanLate(loan, today)) return 'Te laat: verlengen kan niet meer'
+  if (loan.returnDate >= maxReturnDate(loan.startDate)) {
+    return 'De maximale uitleentermijn is al bereikt'
+  }
+  return null
+}
+
 // Doos aanbieden of bewerken, gedeeld door het formulier en de mock-API
 export const boxSchema = z.object({
   gameId: z.number({ error: 'Kies een game' }).int('Kies een game'),
