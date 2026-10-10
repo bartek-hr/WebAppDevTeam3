@@ -320,4 +320,17 @@ export const lendingHandlers: HttpHandler[] = [
     }
     return HttpResponse.json(loanRequest)
   }),
+
+  http.post('/api/requests/:id/reject', ({ request, params }) => {
+    const me = getCurrentMember(request)
+    if (!me) {
+      return HttpResponse.json({ message: 'Log in om een aanvraag af te wijzen.' }, { status: 401 })
+    }
+    const loanRequest = loanRequests.find((r) => r.id === Number(params.id))
+    if (!loanRequest) return requestNotFound()
+    const refusal = refuseDecision(loanRequest, me.id)
+    if (refusal) return refusal
+    loanRequest.status = 'Rejected'
+    return HttpResponse.json(loanRequest)
+  }),
 ]
