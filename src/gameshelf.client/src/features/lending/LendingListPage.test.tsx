@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { loginAs, renderRoutes } from '../../test/utils'
 import LendingListPage from './LendingListPage'
@@ -120,6 +120,9 @@ test('alleen bij eigen dozen staan knoppen om ze aan te passen', async () => {
 
   const otherBox = await findBoxCard('Gloomhaven')
   expect(within(otherBox).queryByRole('button', { name: 'Bewerken' })).not.toBeInTheDocument()
+  expect(
+    within(otherBox).queryByRole('button', { name: 'Van de lijst halen' }),
+  ).not.toBeInTheDocument()
   expect(screen.getAllByRole('button', { name: 'Bewerken' })).toHaveLength(2)
 })
 
@@ -129,8 +132,36 @@ test('een uitgeleende eigen doos kan niet worden aangepast', async () => {
 
   const cousinBox = await findBoxCard('Pandemic Legacy: Season 1')
   expect(await within(cousinBox).findByRole('button', { name: 'Bewerken' })).toBeDisabled()
+  expect(within(cousinBox).getByRole('button', { name: 'Van de lijst halen' })).toBeDisabled()
   expect(within(cousinBox).getByText('Kan niet zolang de doos is uitgeleend')).toBeInTheDocument()
 
   const availableBox = await findBoxCard('Twilight Imperium (4e editie)')
   expect(within(availableBox).getByRole('button', { name: 'Bewerken' })).toBeEnabled()
+})
+
+test('een lid haalt zijn eigen doos van de lijst na bevestigen', async () => {
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending')
+
+  const ownBox = await findBoxCard('7 Wonders Duel')
+  await user.click(within(ownBox).getByRole('button', { name: 'Van de lijst halen' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Doos van de lijst halen' })
+  await user.click(within(dialog).getByRole('button', { name: 'Van de lijst halen' }))
+
+  expect(await screen.findByText('7 van 7 dozen')).toBeInTheDocument()
+  expect(screen.queryByRole('link', { name: '7 Wonders Duel' })).not.toBeInTheDocument()
+})
+
+test('annuleren laat de doos op de lijst staan', async () => {
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending')
+
+  const ownBox = await findBoxCard('7 Wonders Duel')
+  await user.click(within(ownBox).getByRole('button', { name: 'Van de lijst halen' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Doos van de lijst halen' })
+  await user.click(within(dialog).getByRole('button', { name: 'Annuleren' }))
+
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  expect(screen.getByText('8 van 8 dozen')).toBeInTheDocument()
+  expect(screen.getByRole('link', { name: '7 Wonders Duel' })).toBeInTheDocument()
 })
