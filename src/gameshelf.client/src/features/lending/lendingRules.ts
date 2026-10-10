@@ -1,4 +1,5 @@
 import { addDays, differenceInCalendarDays, format, parseISO } from 'date-fns'
+import { nl } from 'date-fns/locale'
 import { z } from 'zod'
 import type { Loan } from '../../types'
 
@@ -8,6 +9,11 @@ export const MAX_LOAN_DAYS = 28
 // Datums gaan als 'yyyy-MM-dd' over de API
 export function toDateString(date: Date) {
   return format(date, 'yyyy-MM-dd')
+}
+
+// Een datum uit de API als Nederlandse tekst, bijv. '7 maart 2019'
+export function formatDate(date: string) {
+  return format(parseISO(date), 'd MMMM yyyy', { locale: nl })
 }
 
 // Ook bij verlengen telt de termijn vanaf de startdatum

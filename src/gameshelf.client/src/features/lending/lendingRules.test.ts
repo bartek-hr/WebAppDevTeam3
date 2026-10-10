@@ -1,6 +1,7 @@
 import {
   boxConditionSchema,
   boxSchema,
+  formatDate,
   isLoanLate,
   MAX_LOAN_DAYS,
   maxReturnDate,
@@ -63,4 +64,11 @@ describe('boxSchema', () => {
 test('boxConditionSchema vraagt alleen de staat', () => {
   expect(boxConditionSchema.safeParse({ condition: 'Als nieuw' }).success).toBe(true)
   expect(boxConditionSchema.safeParse({ condition: '' }).success).toBe(false)
+})
+
+describe('formatDate', () => {
+  test('schrijft de datum uit in het Nederlands', () => {
+    expect(formatDate('2019-03-07')).toBe('7 maart 2019')
+    expect(formatDate('2026-10-10')).toBe('10 oktober 2026')
+  })
 })
