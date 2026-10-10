@@ -51,6 +51,16 @@ test('opent standaard de tab Mijn dozen met alleen mijn eigen dozen', async () =
   expect(screen.queryByRole('heading', { name: 'Gloomhaven' })).not.toBeInTheDocument()
 })
 
+test('een onbekende tab in de URL opent Mijn dozen', async () => {
+  renderRoutes(routes, '/lending/mine?tab=bestaatniet')
+
+  expect(await screen.findByRole('tab', { name: 'Mijn dozen' })).toHaveAttribute(
+    'aria-selected',
+    'true',
+  )
+  expect(await findBoxCard('7 Wonders Duel')).toBeInTheDocument()
+})
+
 test('goedkeuren wijst de andere aanvragen op dezelfde doos af', async () => {
   const user = userEvent.setup()
   renderRoutes(routes, '/lending/mine')

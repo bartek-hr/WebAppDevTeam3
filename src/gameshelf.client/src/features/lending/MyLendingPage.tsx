@@ -4,11 +4,14 @@ import LoansTab from './LoansTab'
 import MyBoxesTab from './MyBoxesTab'
 import MyRequestsTab from './MyRequestsTab'
 
+const tabs = ['boxes', 'requests', 'loans']
+
 // Eigenaar: Rayell (zie docs/TAAKVERDELING.md)
 export default function MyLendingPage() {
-  // De open tab staat in de URL, zodat je er direct naartoe kunt linken
+  // De open tab staat in de URL, zodat je er direct naartoe kunt linken; onbekend wordt Mijn dozen
   const [searchParams, setSearchParams] = useSearchParams()
-  const activeTab = searchParams.get('tab') ?? 'boxes'
+  const tabParam = searchParams.get('tab')
+  const activeTab = tabParam && tabs.includes(tabParam) ? tabParam : 'boxes'
 
   return (
     <>
