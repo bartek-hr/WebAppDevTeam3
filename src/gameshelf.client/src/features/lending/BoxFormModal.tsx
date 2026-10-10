@@ -42,10 +42,10 @@ export default function BoxFormModal({ box, onClose }: BoxFormModalProps) {
   }
 
   return (
-    <Modal show onHide={onClose}>
+    <Modal show onHide={onClose} aria-labelledby="box-form-title">
       <Form noValidate onSubmit={handleSubmit(onSubmit)}>
         <Modal.Header closeButton>
-          <Modal.Title>{box ? 'Doos bewerken' : 'Doos aanbieden'}</Modal.Title>
+          <Modal.Title id="box-form-title">{box ? 'Doos bewerken' : 'Doos aanbieden'}</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {mutation.isError && <Alert variant="danger">{getErrorMessage(mutation.error)}</Alert>}
