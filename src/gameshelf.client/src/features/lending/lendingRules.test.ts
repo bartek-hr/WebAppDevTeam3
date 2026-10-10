@@ -2,12 +2,14 @@ import {
   boxConditionSchema,
   boxSchema,
   daysUntilReturn,
+  extendLoanSchema,
   formatDate,
   getExtendBlockReason,
   isLoanLate,
   lateSince,
   MAX_LOAN_DAYS,
   maxReturnDate,
+  startLoanSchema,
   toDateString,
 } from './lendingRules'
 
@@ -129,5 +131,48 @@ describe('getExtendBlockReason', () => {
     expect(getExtendBlockReason({ ...loan, returnDate: '2026-10-28' }, today)).toBe(
       'De maximale uitleentermijn is al bereikt',
     )
+  })
+})
+
+describe('startLoanSchema', () => {
+  const schema = startLoanSchema(today)
+  const messageFor = (returnDate: string) =>
+    schema.safeParse({ returnDate }).error?.issues[0].message
+
+  test('accepteert een datum binnen de maximale termijn', () => {
+    expect(schema.safeParse({ returnDate: '2026-10-24' }).success).toBe(true)
+    expect(schema.safeParse({ returnDate: '2026-11-07' }).success).toBe(true)
+  })
+
+  test('de inleverdatum moet na vandaag liggen', () => {
+    expect(messageFor('2026-10-10')).toBe('Kies een datum na 10 oktober 2026')
+  })
+
+  test('de inleverdatum mag niet na de maximale termijn liggen', () => {
+    expect(messageFor('2026-11-08')).toBe('Kies uiterlijk 7 november 2026')
+  })
+
+  test('zonder geldige datum geeft een nette melding', () => {
+    expect(messageFor('')).toBe('Kies een inleverdatum')
+    expect(messageFor('2026-02-30')).toBe('Kies een inleverdatum')
+  })
+})
+
+describe('extendLoanSchema', () => {
+  const schema = extendLoanSchema({ startDate: '2026-09-30', returnDate: '2026-10-14' })
+  const messageFor = (returnDate: string) =>
+    schema.safeParse({ returnDate }).error?.issues[0].message
+
+  test('accepteert een latere datum tot het maximum vanaf de start', () => {
+    expect(schema.safeParse({ returnDate: '2026-10-15' }).success).toBe(true)
+    expect(schema.safeParse({ returnDate: '2026-10-28' }).success).toBe(true)
+  })
+
+  test('de nieuwe datum moet na de huidige inleverdatum liggen', () => {
+    expect(messageFor('2026-10-14')).toBe('Kies een datum na 14 oktober 2026')
+  })
+
+  test('de termijn telt vanaf de startdatum, niet vanaf de oude inleverdatum', () => {
+    expect(messageFor('2026-10-29')).toBe('Kies uiterlijk 28 oktober 2026')
   })
 })

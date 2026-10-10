@@ -65,3 +65,25 @@ export type NewBox = z.infer<typeof boxSchema>
 export const boxConditionSchema = boxSchema.pick({ condition: true })
 
 export type BoxConditionUpdate = z.infer<typeof boxConditionSchema>
+
+// Een nieuwe inleverdatum: na `after` en uiterlijk op `latest`
+function returnDateSchema(after: string, latest: string) {
+  return z.object({
+    returnDate: z.iso
+      .date({ error: 'Kies een inleverdatum' })
+      .refine((date) => date > after, `Kies een datum na ${formatDate(after)}`)
+      .refine((date) => date <= latest, `Kies uiterlijk ${formatDate(latest)}`),
+  })
+}
+
+export type ReturnDateInput = z.infer<ReturnType<typeof returnDateSchema>>
+
+// Lening starten: vanaf vandaag hooguit de maximale termijn
+export function startLoanSchema(today = new Date()) {
+  return returnDateSchema(toDateString(today), toDateString(addDays(today, MAX_LOAN_DAYS)))
+}
+
+// Verlengen: later dan de huidige inleverdatum, maar binnen de termijn vanaf de start
+export function extendLoanSchema(loan: Pick<Loan, 'startDate' | 'returnDate'>) {
+  return returnDateSchema(loan.returnDate, maxReturnDate(loan.startDate))
+}
