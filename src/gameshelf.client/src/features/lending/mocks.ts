@@ -2,7 +2,7 @@ import { addDays } from 'date-fns'
 import type { HttpHandler } from 'msw'
 import type { Box, Loan, LoanRequest, LoanRequestStatus } from '../../types'
 import { games } from '../catalogue/mocks'
-import { toDateString } from './lendingRules'
+import { isLoanLate, toDateString } from './lendingRules'
 
 // Eigenaar: Rayell. Nep-endpoints voor deze feature (alleen actief als VITE_USE_MOCKS=true).
 
@@ -112,6 +112,15 @@ export function resetLendingMocks() {
   boxes.splice(0, boxes.length, ...seedBoxes())
   loanRequests.splice(0, loanRequests.length, ...seedLoanRequests())
   loans.splice(0, loans.length, ...seedLoans())
+}
+
+export function toBoxDto(box: BoxRecord): Box {
+  const isOnLoan = loans.some((loan) => loan.boxId === box.id && !loan.returnedOn)
+  return { ...box, isOnLoan }
+}
+
+export function toLoanDto({ requestId: _requestId, ...loan }: LoanRecord): Loan {
+  return { ...loan, isLate: isLoanLate(loan) }
 }
 
 export const lendingHandlers: HttpHandler[] = []
