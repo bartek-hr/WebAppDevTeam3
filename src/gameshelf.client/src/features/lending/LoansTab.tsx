@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Alert, Button, ListGroup } from 'react-bootstrap'
-import { CalendarPlus } from 'react-bootstrap-icons'
+import { BoxArrowInLeft, CalendarPlus } from 'react-bootstrap-icons'
 import { Link } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
 import PageSpinner from '../../components/PageSpinner'
@@ -10,6 +10,7 @@ import { useAuth } from '../auth/useAuth'
 import { useBoxes, useLoans } from './api'
 import ExtendLoanModal from './ExtendLoanModal'
 import { daysUntilReturn, formatDate, getExtendBlockReason, lateSince } from './lendingRules'
+import ReturnLoanModal from './ReturnLoanModal'
 import { LoanStatusBadge } from './StatusBadges'
 
 interface LoanDueTextProps {
@@ -70,6 +71,39 @@ function ExtendLoanButton({ loan, box }: ExtendLoanButtonProps) {
   )
 }
 
+interface ReturnLoanButtonProps {
+  loan: Loan
+  box?: Box
+  borrowerName?: string
+}
+
+function ReturnLoanButton({ loan, box, borrowerName }: ReturnLoanButtonProps) {
+  const [isReturning, setIsReturning] = useState(false)
+
+  return (
+    <>
+      <Button
+        size="sm"
+        variant="outline-success"
+        className="mt-2"
+        onClick={() => setIsReturning(true)}
+      >
+        <BoxArrowInLeft className="me-1" />
+        Teruggebracht
+      </Button>
+
+      {isReturning && (
+        <ReturnLoanModal
+          loan={loan}
+          box={box}
+          borrowerName={borrowerName}
+          onClose={() => setIsReturning(false)}
+        />
+      )}
+    </>
+  )
+}
+
 interface LoanItemProps {
   loan: Loan
   box?: Box
@@ -100,6 +134,9 @@ function LoanItem({ loan, box, isLender, otherName }: LoanItemProps) {
         <LoanStatusBadge loan={loan} />
       </div>
       {!isLender && !loan.returnedOn && <ExtendLoanButton loan={loan} box={box} />}
+      {isLender && !loan.returnedOn && (
+        <ReturnLoanButton loan={loan} box={box} borrowerName={otherName} />
+      )}
     </ListGroup.Item>
   )
 }

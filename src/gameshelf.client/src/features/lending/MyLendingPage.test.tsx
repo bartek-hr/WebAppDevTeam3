@@ -311,3 +311,33 @@ test('een al verlengde lening kan niet nog een keer verlengd worden', async () =
   const gloomhaven = await findLoan('Uitgeleend', 'Gloomhaven')
   expect(within(gloomhaven).queryByRole('button', { name: 'Verlengen' })).not.toBeInTheDocument()
 })
+
+test('de eigenaar registreert dat de doos is teruggebracht', async () => {
+  loginAs('m6')
+  const user = userEvent.setup()
+  const { router } = renderRoutes(routes, '/lending/mine?tab=loans')
+
+  const azul = await findLoan('Uitgeleend', 'Azul')
+  expect(within(azul).getByText('te laat')).toBeInTheDocument()
+  await user.click(within(azul).getByRole('button', { name: 'Teruggebracht' }))
+  const dialog = await screen.findByRole('dialog', { name: 'Doos teruggebracht' })
+  await user.click(within(dialog).getByRole('button', { name: 'Teruggebracht' }))
+
+  expect(await within(azul).findByText('teruggebracht')).toBeInTheDocument()
+  expect(within(azul).queryByText('te laat')).not.toBeInTheDocument()
+  expect(within(azul).queryByRole('button', { name: 'Teruggebracht' })).not.toBeInTheDocument()
+
+  await act(() => router.navigate('/lending'))
+  const box = (await screen.findByRole('link', { name: 'Azul' })).closest<HTMLElement>('.card')!
+  expect(await within(box).findByText('beschikbaar')).toBeInTheDocument()
+})
+
+test('alleen de eigenaar ziet de knop Teruggebracht', async () => {
+  loginAs('m6')
+  renderRoutes(routes, '/lending/mine?tab=loans')
+
+  const cousinLoan = await findLoan('Geleend', 'Pandemic Legacy: Season 1')
+  expect(
+    within(cousinLoan).queryByRole('button', { name: 'Teruggebracht' }),
+  ).not.toBeInTheDocument()
+})
