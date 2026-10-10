@@ -1,5 +1,7 @@
 import { Tab, Tabs } from 'react-bootstrap'
 import { useSearchParams } from 'react-router-dom'
+import { useAuth } from '../auth/useAuth'
+import CommitteeLoansTab from './CommitteeLoansTab'
 import LoansTab from './LoansTab'
 import MyBoxesTab from './MyBoxesTab'
 import MyRequestsTab from './MyRequestsTab'
@@ -8,10 +10,13 @@ const tabs = ['boxes', 'requests', 'loans']
 
 // Eigenaar: Rayell (zie docs/TAAKVERDELING.md)
 export default function MyLendingPage() {
+  const { isCommittee } = useAuth()
+  // Alleen het bestuur ziet de tab Bestuur
+  const availableTabs = isCommittee ? [...tabs, 'committee'] : tabs
   // De open tab staat in de URL, zodat je er direct naartoe kunt linken; onbekend wordt Mijn dozen
   const [searchParams, setSearchParams] = useSearchParams()
   const tabParam = searchParams.get('tab')
-  const activeTab = tabParam && tabs.includes(tabParam) ? tabParam : 'boxes'
+  const activeTab = tabParam && availableTabs.includes(tabParam) ? tabParam : 'boxes'
 
   return (
     <>
@@ -39,6 +44,11 @@ export default function MyLendingPage() {
         <Tab eventKey="loans" title="Leningen">
           <LoansTab />
         </Tab>
+        {isCommittee && (
+          <Tab eventKey="committee" title="Bestuur">
+            <CommitteeLoansTab />
+          </Tab>
+        )}
       </Tabs>
     </>
   )
