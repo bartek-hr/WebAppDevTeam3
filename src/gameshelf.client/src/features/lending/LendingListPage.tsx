@@ -7,15 +7,17 @@ import GameCard from '../../components/GameCard'
 import PageSpinner from '../../components/PageSpinner'
 import { useMembers } from '../auth/api'
 import { useAuth } from '../auth/useAuth'
-import { useBoxes } from './api'
+import { useBoxes, useLoanRequests } from './api'
 import BoxCardActions from './BoxCardActions'
 import BoxFormModal from './BoxFormModal'
+import RequestBoxButton from './RequestBoxButton'
 import { BoxAvailabilityBadge } from './StatusBadges'
 
 // Eigenaar: Rayell (zie docs/TAAKVERDELING.md)
 export default function LendingListPage() {
   const { data: boxes, isLoading, isError, error } = useBoxes()
   const { data: members } = useMembers()
+  const { data: loanRequests } = useLoanRequests()
   const { member } = useAuth()
   const [isOffering, setIsOffering] = useState(false)
   // Filters staan in de URL, net als in de catalogus
@@ -35,6 +37,11 @@ export default function LendingListPage() {
   }
 
   const userNames = new Map(members?.map((member) => [member.id, member.userName]))
+  const requestedBoxIds = new Set(
+    loanRequests
+      ?.filter((r) => r.requesterId === member?.id && r.status === 'Pending')
+      .map((r) => r.boxId),
+  )
   const search = query.trim().toLowerCase()
   const filtered = (boxes ?? [])
     .filter((box) => !search || box.game.title.toLowerCase().includes(search))
@@ -110,6 +117,9 @@ export default function LendingListPage() {
                     <p className="small text-body-secondary mb-2">{box.condition}</p>
                     <BoxAvailabilityBadge isOnLoan={box.isOnLoan} />
                     {box.ownerId === member?.id && <BoxCardActions box={box} />}
+                    {box.ownerId !== member?.id && !box.isOnLoan && (
+                      <RequestBoxButton box={box} isRequested={requestedBoxIds.has(box.id)} />
+                    )}
                   </GameCard>
                 </Col>
               ))}

@@ -165,3 +165,35 @@ test('annuleren laat de doos op de lijst staan', async () => {
   expect(screen.getByText('8 van 8 dozen')).toBeInTheDocument()
   expect(screen.getByRole('link', { name: '7 Wonders Duel' })).toBeInTheDocument()
 })
+
+test('een lid vraagt een beschikbare doos van iemand anders aan', async () => {
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending')
+
+  const box = await findBoxCard('Codenames')
+  await user.click(await within(box).findByRole('button', { name: 'Aanvragen' }))
+
+  expect(await within(box).findByRole('button', { name: 'Aangevraagd' })).toBeDisabled()
+  expect(within(box).queryByRole('button', { name: 'Aanvragen' })).not.toBeInTheDocument()
+})
+
+test('een openstaande aanvraag toont Aangevraagd', async () => {
+  loginAs('m3')
+  renderRoutes(routes, '/lending')
+
+  const catan = await findBoxCard('Catan')
+  expect(await within(catan).findByRole('button', { name: 'Aangevraagd' })).toBeDisabled()
+  expect(within(catan).getByText('De eigenaar moet je aanvraag nog beoordelen')).toBeInTheDocument()
+})
+
+test('eigen dozen en uitgeleende dozen kunnen niet worden aangevraagd', async () => {
+  renderRoutes(routes, '/lending')
+
+  await screen.findByText('8 van 8 dozen')
+  const ownBox = await findBoxCard('7 Wonders Duel')
+  expect(within(ownBox).queryByRole('button', { name: 'Aanvragen' })).not.toBeInTheDocument()
+  const onLoan = await findBoxCard('Gloomhaven')
+  expect(within(onLoan).queryByRole('button', { name: 'Aanvragen' })).not.toBeInTheDocument()
+  // Alleen Codenames en Twilight Imperium zijn beschikbaar en van iemand anders
+  expect(await screen.findAllByRole('button', { name: 'Aanvragen' })).toHaveLength(2)
+})
