@@ -3,7 +3,7 @@ import { http, HttpResponse, type HttpHandler } from 'msw'
 import type { Box, Loan, LoanRequest, LoanRequestStatus } from '../../types'
 import { getCurrentMember } from '../auth/mocks'
 import { games } from '../catalogue/mocks'
-import { isLoanLate, toDateString } from './lendingRules'
+import { boxSchema, isLoanLate, toDateString } from './lendingRules'
 
 // Eigenaar: Rayell. Nep-endpoints voor deze feature (alleen actief als VITE_USE_MOCKS=true).
 
@@ -133,5 +133,32 @@ export const lendingHandlers: HttpHandler[] = [
       )
     }
     return HttpResponse.json(boxes.map(toBoxDto))
+  }),
+
+  http.post('/api/boxes', async ({ request }) => {
+    const me = getCurrentMember(request)
+    if (!me) {
+      return HttpResponse.json({ message: 'Log in om een doos aan te bieden.' }, { status: 401 })
+    }
+    const parsed = boxSchema.safeParse(await request.json())
+    if (!parsed.success) {
+      return HttpResponse.json({ message: parsed.error.issues[0].message }, { status: 400 })
+    }
+    const game = games.find((g) => g.id === parsed.data.gameId)
+    if (!game) {
+      return HttpResponse.json(
+        { message: 'Deze game staat niet in de catalogus.' },
+        { status: 404 },
+      )
+    }
+    // Bewust geen controle op de collectie: je mag elke game uit de catalogus aanbieden
+    const created: BoxRecord = {
+      id: Math.max(0, ...boxes.map((b) => b.id)) + 1,
+      ownerId: me.id,
+      game,
+      condition: parsed.data.condition,
+    }
+    boxes.push(created)
+    return HttpResponse.json(toBoxDto(created), { status: 201 })
   }),
 ]
