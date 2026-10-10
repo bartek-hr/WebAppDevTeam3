@@ -2,6 +2,7 @@ import { act, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { loginAs, renderRoutes } from '../../test/utils'
 import LendingListPage from './LendingListPage'
+import { suggestedReturnDate } from './lendingRules'
 import { boxes, loanRequests, resetLendingMocks } from './mocks'
 import MyLendingPage from './MyLendingPage'
 
@@ -98,6 +99,37 @@ test('beoordeelde aanvragen hebben geen knoppen meer', async () => {
   ).toBeInTheDocument()
   expect(within(await findRequestItem(twilight, 'daan')).getByText('afgewezen')).toBeInTheDocument()
   expect(within(twilight).queryByRole('button', { name: 'Goedkeuren' })).not.toBeInTheDocument()
+})
+
+test('de eigenaar start de lening voor een goedgekeurde aanvraag', async () => {
+  loginAs('m4')
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending/mine')
+
+  const twilight = await findBoxCard('Twilight Imperium (4e editie)')
+  expect(within(twilight).getByText('beschikbaar')).toBeInTheDocument()
+  await user.click(
+    await within(await findRequestItem(twilight, 'sanne')).findByRole('button', {
+      name: 'Lening starten',
+    }),
+  )
+  const dialog = await screen.findByRole('dialog', { name: 'Lening starten' })
+  expect(within(dialog).getByLabelText('Inleverdatum')).toHaveValue(suggestedReturnDate())
+  await user.click(within(dialog).getByRole('button', { name: 'Lening starten' }))
+
+  expect(await within(twilight).findByText('uitgeleend')).toBeInTheDocument()
+  expect(within(twilight).queryByRole('button', { name: 'Lening starten' })).not.toBeInTheDocument()
+})
+
+test('een gestarte lening toont geen knop Lening starten meer', async () => {
+  loginAs('m3')
+  renderRoutes(routes, '/lending/mine')
+
+  const gloomhaven = await findBoxCard('Gloomhaven')
+  expect(within(gloomhaven).getByText('goedgekeurd')).toBeInTheDocument()
+  expect(
+    within(gloomhaven).queryByRole('button', { name: 'Lening starten' }),
+  ).not.toBeInTheDocument()
 })
 
 test('goedkeuren kan niet zolang een goedgekeurde aanvraag nog geen lening is', async () => {

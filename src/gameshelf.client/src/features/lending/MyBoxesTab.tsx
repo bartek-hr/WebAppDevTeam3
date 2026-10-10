@@ -1,25 +1,30 @@
+import { useState } from 'react'
 import { Alert, Button, Card, ListGroup } from 'react-bootstrap'
-import { Check2, X } from 'react-bootstrap-icons'
+import { BoxArrowRight, Check2, X } from 'react-bootstrap-icons'
 import { Link } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
 import PageSpinner from '../../components/PageSpinner'
-import type { Box, LoanRequest } from '../../types'
+import type { Box, Loan, LoanRequest } from '../../types'
 import { formatEdition } from '../../utils/format'
 import { useMembers } from '../auth/api'
 import { useAuth } from '../auth/useAuth'
-import { useApproveRequest, useBoxes, useLoanRequests, useRejectRequest } from './api'
-import { formatDate } from './lendingRules'
+import { useApproveRequest, useBoxes, useLoanRequests, useLoans, useRejectRequest } from './api'
+import { formatDate, isLoanStarted } from './lendingRules'
+import StartLoanModal from './StartLoanModal'
 import { BoxAvailabilityBadge, RequestStatusBadge } from './StatusBadges'
 
 interface IncomingRequestProps {
+  box: Box
   request: LoanRequest
   userName?: string
+  canStartLoan: boolean
 }
 
 // Een aanvraag op mijn doos; zolang hij in afwachting is kan ik hem goedkeuren of afwijzen
-function IncomingRequest({ request, userName }: IncomingRequestProps) {
+function IncomingRequest({ box, request, userName, canStartLoan }: IncomingRequestProps) {
   const approve = useApproveRequest()
   const reject = useRejectRequest()
+  const [isStartingLoan, setIsStartingLoan] = useState(false)
   const isBusy = approve.isPending || reject.isPending
   const error = approve.error ?? reject.error
 
@@ -56,10 +61,30 @@ function IncomingRequest({ request, userName }: IncomingRequestProps) {
           </Button>
         </div>
       )}
+      {canStartLoan && (
+        <>
+          <Button size="sm" className="mt-2" onClick={() => setIsStartingLoan(true)}>
+            <BoxArrowRight className="me-1" />
+            Lening starten
+          </Button>
+          <div className="small text-body-secondary mt-1">
+            Start de lening zodra je de doos op de clubavond hebt overgedragen
+          </div>
+        </>
+      )}
       {error && (
         <Alert variant="danger" className="small p-2 mt-2 mb-0">
           {getErrorMessage(error)}
         </Alert>
+      )}
+
+      {isStartingLoan && (
+        <StartLoanModal
+          box={box}
+          request={request}
+          borrowerName={userName}
+          onClose={() => setIsStartingLoan(false)}
+        />
       )}
     </ListGroup.Item>
   )
@@ -68,10 +93,11 @@ function IncomingRequest({ request, userName }: IncomingRequestProps) {
 interface BoxRequestsCardProps {
   box: Box
   requests: LoanRequest[]
+  loans: Loan[]
   userNames: Map<string, string>
 }
 
-function BoxRequestsCard({ box, requests, userNames }: BoxRequestsCardProps) {
+function BoxRequestsCard({ box, requests, loans, userNames }: BoxRequestsCardProps) {
   return (
     <Card className="mb-3 shadow-sm">
       <Card.Header className="d-flex flex-wrap align-items-center justify-content-between gap-2">
@@ -90,8 +116,12 @@ function BoxRequestsCard({ box, requests, userNames }: BoxRequestsCardProps) {
           {requests.map((request) => (
             <IncomingRequest
               key={request.id}
+              box={box}
               request={request}
               userName={userNames.get(request.requesterId)}
+              canStartLoan={
+                request.status === 'Approved' && !box.isOnLoan && !isLoanStarted(request, loans)
+              }
             />
           ))}
         </ListGroup>
@@ -104,13 +134,15 @@ export default function MyBoxesTab() {
   const { member } = useAuth()
   const boxes = useBoxes()
   const loanRequests = useLoanRequests()
+  const loans = useLoans()
   const { data: members } = useMembers()
 
-  if (boxes.isLoading || loanRequests.isLoading) return <PageSpinner />
-  if (boxes.isError || loanRequests.isError) {
+  if (boxes.isLoading || loanRequests.isLoading || loans.isLoading) return <PageSpinner />
+  if (boxes.isError || loanRequests.isError || loans.isError) {
     return (
       <Alert variant="danger">
-        Je dozen konden niet geladen worden. {getErrorMessage(boxes.error ?? loanRequests.error)}
+        Je dozen konden niet geladen worden.{' '}
+        {getErrorMessage(boxes.error ?? loanRequests.error ?? loans.error)}
       </Alert>
     )
   }
@@ -141,6 +173,7 @@ export default function MyBoxesTab() {
           key={box.id}
           box={box}
           requests={requestsFor(box.id)}
+          loans={loans.data ?? []}
           userNames={userNames}
         />
       ))}
