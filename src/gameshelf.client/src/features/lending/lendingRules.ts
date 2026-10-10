@@ -36,7 +36,7 @@ export function lateSince(returnDate: string) {
   return toDateString(addDays(parseISO(returnDate), 1))
 }
 
-// De Loan-DTO kent geen requestId: gestart = de aanvrager leende deze doos op of na de aanvraagdatum
+// De DTO kent geen requestId: gestart = de aanvrager leende de doos op of na de aanvraagdatum
 export function isLoanStarted(request: LoanRequest, loans: Loan[]) {
   return loans.some(
     (loan) =>
