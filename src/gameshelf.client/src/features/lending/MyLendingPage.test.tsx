@@ -137,6 +137,35 @@ test('de eigenaar start de lening voor een goedgekeurde aanvraag', async () => {
 
   expect(await within(twilight).findByText('uitgeleend')).toBeInTheDocument()
   expect(within(twilight).queryByRole('button', { name: 'Lening starten' })).not.toBeInTheDocument()
+
+  await user.click(screen.getByRole('tab', { name: 'Leningen' }))
+  const loan = await findLoan('Uitgeleend', 'Twilight Imperium (4e editie)')
+  expect(within(loan).getByText('Geleend door: sanne')).toBeInTheDocument()
+  expect(within(loan).getByText('Nog 14 dagen')).toBeInTheDocument()
+  expect(within(loan).getByRole('button', { name: 'Teruggebracht' })).toBeInTheDocument()
+})
+
+test('een lening starten voorbij de maximale termijn geeft een melding', async () => {
+  loginAs('m4')
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending/mine')
+
+  const twilight = await findBoxCard('Twilight Imperium (4e editie)')
+  await user.click(
+    await within(await findRequestItem(twilight, 'sanne')).findByRole('button', {
+      name: 'Lening starten',
+    }),
+  )
+  const dialog = await screen.findByRole('dialog', { name: 'Lening starten' })
+  const returnDate = within(dialog).getByLabelText('Inleverdatum')
+  await user.clear(returnDate)
+  await user.type(returnDate, daysFromToday(29))
+  await user.click(within(dialog).getByRole('button', { name: 'Lening starten' }))
+
+  expect(
+    await within(dialog).findByText(`Kies uiterlijk ${formatDate(daysFromToday(28))}`),
+  ).toBeInTheDocument()
+  expect(within(twilight).getByText('beschikbaar')).toBeInTheDocument()
 })
 
 test('een gestarte lening toont geen knop Lening starten meer', async () => {
