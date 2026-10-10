@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { type QueryClient, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
-import type { Box, LoanRequest } from '../../types'
-import type { BoxConditionUpdate, NewBox } from './lendingRules'
+import type { Box, Loan, LoanRequest } from '../../types'
+import type { BoxConditionUpdate, NewBox, ReturnDateInput } from './lendingRules'
 
 export function useBoxes() {
   return useQuery({
@@ -73,5 +73,47 @@ export function useRejectRequest() {
   return useMutation({
     mutationFn: async (id: number) => (await api.post<LoanRequest>(`/requests/${id}/reject`)).data,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['loan-requests'] }),
+  })
+}
+
+// Leningen waarin ik de doos uitleen of leen
+export function useLoans() {
+  return useQuery({
+    queryKey: ['loans'],
+    queryFn: async () => (await api.get<Loan[]>('/loans')).data,
+  })
+}
+
+// Starten en terugbrengen veranderen ook of de doos is uitgeleend
+function invalidateLoansAndBoxes(queryClient: QueryClient) {
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: ['loans'] }),
+    queryClient.invalidateQueries({ queryKey: ['boxes'] }),
+  ])
+}
+
+export function useStartLoan() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (input: ReturnDateInput & { requestId: number }) =>
+      (await api.post<Loan>('/loans', input)).data,
+    onSuccess: () => invalidateLoansAndBoxes(queryClient),
+  })
+}
+
+export function useExtendLoan() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async ({ id, ...input }: ReturnDateInput & { id: number }) =>
+      (await api.post<Loan>(`/loans/${id}/extend`, input)).data,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['loans'] }),
+  })
+}
+
+export function useReturnLoan() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async (id: number) => (await api.post<Loan>(`/loans/${id}/return`)).data,
+    onSuccess: () => invalidateLoansAndBoxes(queryClient),
   })
 }
