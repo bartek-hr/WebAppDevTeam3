@@ -84,7 +84,15 @@ export function useLoans() {
   })
 }
 
-// Starten en terugbrengen veranderen ook of de doos is uitgeleend
+// Alle lopende leningen van alle leden, alleen voor het bestuur
+export function useActiveLoans() {
+  return useQuery({
+    queryKey: ['loans', 'active'],
+    queryFn: async () => (await api.get<Loan[]>('/loans/active')).data,
+  })
+}
+
+// Starten en terugbrengen veranderen ook of de doos is uitgeleend (['loans'] dekt ook 'active')
 function invalidateLoansAndBoxes(queryClient: QueryClient) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: ['loans'] }),
