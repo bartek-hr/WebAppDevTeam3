@@ -1,5 +1,6 @@
 import { Tab, Tabs } from 'react-bootstrap'
 import { useSearchParams } from 'react-router-dom'
+import LoansTab from './LoansTab'
 import MyBoxesTab from './MyBoxesTab'
 import MyRequestsTab from './MyRequestsTab'
 
@@ -15,7 +16,8 @@ export default function MyLendingPage() {
         <h1 className="mb-0">Mijn uitleningen</h1>
       </div>
       <p className="text-body-secondary">
-        Beoordeel aanvragen op je eigen dozen en volg de dozen die je zelf hebt aangevraagd.
+        Beoordeel aanvragen op je eigen dozen, volg de dozen die je zelf hebt aangevraagd en houd je
+        leningen bij.
       </p>
 
       <Tabs
@@ -30,6 +32,9 @@ export default function MyLendingPage() {
         </Tab>
         <Tab eventKey="requests" title="Mijn aanvragen">
           <MyRequestsTab />
+        </Tab>
+        <Tab eventKey="loans" title="Leningen">
+          <LoansTab />
         </Tab>
       </Tabs>
     </>

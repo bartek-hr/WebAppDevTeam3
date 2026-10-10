@@ -31,6 +31,11 @@ async function findMyRequest(title: string) {
   return link.closest<HTMLElement>('li')!
 }
 
+async function findLoan(section: 'Uitgeleend' | 'Geleend', title: string) {
+  const region = await screen.findByRole('region', { name: section })
+  return (await within(region).findByRole('link', { name: title })).closest<HTMLElement>('li')!
+}
+
 test('opent standaard de tab Mijn dozen met alleen mijn eigen dozen', async () => {
   renderRoutes(routes, '/lending/mine')
 
@@ -210,4 +215,41 @@ test('toont een melding als je nog geen dozen aanbiedt', async () => {
     'href',
     '/lending',
   )
+})
+
+test('Leningen toont wat ik uitleen en wat ik leen', async () => {
+  loginAs('m3')
+  renderRoutes(routes, '/lending/mine?tab=loans')
+
+  const gloomhaven = await findLoan('Uitgeleend', 'Gloomhaven')
+  expect(await within(gloomhaven).findByText('Geleend door: daan')).toBeInTheDocument()
+  expect(within(gloomhaven).getByText('uitgeleend')).toBeInTheDocument()
+  expect(within(gloomhaven).getByText('Nog 4 dagen')).toBeInTheDocument()
+
+  const wingspan = await findLoan('Geleend', 'Wingspan')
+  expect(await within(wingspan).findByText('Eigenaar: sanne')).toBeInTheDocument()
+  expect(within(wingspan).getByText('verlengd')).toBeInTheDocument()
+})
+
+test('de doos bij de neef staat te laat', async () => {
+  loginAs('m6')
+  renderRoutes(routes, '/lending/mine?tab=loans')
+
+  const cousinLoan = await findLoan('Geleend', 'Pandemic Legacy: Season 1')
+  expect(within(cousinLoan).getByText('te laat')).toBeInTheDocument()
+  expect(within(cousinLoan).getByText('Van 7 maart 2019 tot 4 april 2019')).toBeInTheDocument()
+  expect(within(cousinLoan).getByText('Te laat sinds 5 april 2019')).toBeInTheDocument()
+})
+
+test('een teruggebrachte doos staat als teruggebracht in de lijst', async () => {
+  renderRoutes(routes, '/lending/mine?tab=loans')
+
+  const duel = await findLoan('Uitgeleend', '7 Wonders Duel')
+  expect(within(duel).getByText('teruggebracht')).toBeInTheDocument()
+  expect(
+    within(screen.getByRole('region', { name: 'Uitgeleend' })).getAllByRole('listitem'),
+  ).toHaveLength(1)
+  expect(
+    within(screen.getByRole('region', { name: 'Geleend' })).getAllByRole('listitem'),
+  ).toHaveLength(1)
 })
