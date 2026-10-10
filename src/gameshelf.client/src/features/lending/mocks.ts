@@ -1,6 +1,7 @@
 import { addDays } from 'date-fns'
-import type { HttpHandler } from 'msw'
+import { http, HttpResponse, type HttpHandler } from 'msw'
 import type { Box, Loan, LoanRequest, LoanRequestStatus } from '../../types'
+import { getCurrentMember } from '../auth/mocks'
 import { games } from '../catalogue/mocks'
 import { isLoanLate, toDateString } from './lendingRules'
 
@@ -123,4 +124,14 @@ export function toLoanDto({ requestId: _requestId, ...loan }: LoanRecord): Loan 
   return { ...loan, isLate: isLoanLate(loan) }
 }
 
-export const lendingHandlers: HttpHandler[] = []
+export const lendingHandlers: HttpHandler[] = [
+  http.get('/api/boxes', ({ request }) => {
+    if (!getCurrentMember(request)) {
+      return HttpResponse.json(
+        { message: 'Log in om de uitleenlijst te bekijken.' },
+        { status: 401 },
+      )
+    }
+    return HttpResponse.json(boxes.map(toBoxDto))
+  }),
+]
