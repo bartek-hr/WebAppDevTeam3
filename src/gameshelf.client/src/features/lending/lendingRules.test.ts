@@ -1,4 +1,11 @@
-import { isLoanLate, MAX_LOAN_DAYS, maxReturnDate, toDateString } from './lendingRules'
+import {
+  boxConditionSchema,
+  boxSchema,
+  isLoanLate,
+  MAX_LOAN_DAYS,
+  maxReturnDate,
+  toDateString,
+} from './lendingRules'
 
 const today = new Date(2026, 9, 10, 15, 30)
 
@@ -29,4 +36,31 @@ describe('isLoanLate', () => {
 
 test('toDateString geeft de datum als yyyy-MM-dd', () => {
   expect(toDateString(today)).toBe('2026-10-10')
+})
+
+describe('boxSchema', () => {
+  test('accepteert een game met een beschrijving en haalt spaties weg', () => {
+    const result = boxSchema.safeParse({ gameId: 1, condition: '  Compleet  ' })
+    expect(result.data).toEqual({ gameId: 1, condition: 'Compleet' })
+  })
+
+  test('zonder game geeft een nette melding', () => {
+    const result = boxSchema.safeParse({ gameId: null, condition: 'Compleet' })
+    expect(result.error?.issues[0].message).toBe('Kies een game')
+  })
+
+  test('alleen spaties is geen beschrijving', () => {
+    const result = boxSchema.safeParse({ gameId: 1, condition: '   ' })
+    expect(result.error?.issues[0].message).toBe('Beschrijf de staat van de doos')
+  })
+
+  test('de beschrijving mag niet te lang zijn', () => {
+    const result = boxSchema.safeParse({ gameId: 1, condition: 'x'.repeat(501) })
+    expect(result.error?.issues[0].message).toBe('Maximaal 500 tekens')
+  })
+})
+
+test('boxConditionSchema vraagt alleen de staat', () => {
+  expect(boxConditionSchema.safeParse({ condition: 'Als nieuw' }).success).toBe(true)
+  expect(boxConditionSchema.safeParse({ condition: '' }).success).toBe(false)
 })

@@ -1,4 +1,5 @@
 import { addDays, differenceInCalendarDays, format, parseISO } from 'date-fns'
+import { z } from 'zod'
 import type { Loan } from '../../types'
 
 // Maximale uitleentermijn in dagen, constant tot de backend hem levert
@@ -18,3 +19,20 @@ export function maxReturnDate(startDate: string) {
 export function isLoanLate(loan: Pick<Loan, 'returnDate' | 'returnedOn'>, today = new Date()) {
   return !loan.returnedOn && differenceInCalendarDays(today, parseISO(loan.returnDate)) > 0
 }
+
+// Doos aanbieden of bewerken, gedeeld door het formulier en de mock-API
+export const boxSchema = z.object({
+  gameId: z.number({ error: 'Kies een game' }).int('Kies een game'),
+  condition: z
+    .string()
+    .trim()
+    .min(1, 'Beschrijf de staat van de doos')
+    .max(500, 'Maximaal 500 tekens'),
+})
+
+export type NewBox = z.infer<typeof boxSchema>
+
+// Bij bewerken verandert alleen de staat, de game blijft dezelfde
+export const boxConditionSchema = boxSchema.pick({ condition: true })
+
+export type BoxConditionUpdate = z.infer<typeof boxConditionSchema>
