@@ -200,4 +200,30 @@ export const lendingHandlers: HttpHandler[] = [
     box.condition = parsed.data.condition
     return HttpResponse.json(toBoxDto(box))
   }),
+
+  http.delete('/api/boxes/:id', ({ request, params }) => {
+    const me = getCurrentMember(request)
+    if (!me) {
+      return HttpResponse.json(
+        { message: 'Log in om je doos van de lijst te halen.' },
+        { status: 401 },
+      )
+    }
+    const box = boxes.find((b) => b.id === Number(params.id))
+    if (!box) return boxNotFound()
+    const refusal = refuseBoxChange(
+      box,
+      me.id,
+      'Deze doos is uitgeleend en kan pas van de lijst als hij terug is.',
+    )
+    if (refusal) return refusal
+    boxes.splice(boxes.indexOf(box), 1)
+    // Openstaande aanvragen kunnen niet meer doorgaan, dus die worden afgewezen
+    for (const loanRequest of loanRequests) {
+      if (loanRequest.boxId === box.id && loanRequest.status === 'Pending') {
+        loanRequest.status = 'Rejected'
+      }
+    }
+    return new HttpResponse(null, { status: 204 })
+  }),
 ]
