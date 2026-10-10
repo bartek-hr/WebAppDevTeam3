@@ -165,6 +165,8 @@ function refuseDecision(loanRequest: LoanRequest, memberId: string) {
   }
 }
 
+const ownerOf = (boxId: number) => boxes.find((b) => b.id === boxId)?.ownerId
+
 export const lendingHandlers: HttpHandler[] = [
   http.get('/api/boxes', ({ request }) => {
     if (!getCurrentMember(request)) {
@@ -348,5 +350,18 @@ export const lendingHandlers: HttpHandler[] = [
     if (refusal) return refusal
     loanRequest.status = 'Rejected'
     return HttpResponse.json(loanRequest)
+  }),
+
+  // Leningen waarin ik de doos uitleen of leen
+  http.get('/api/loans', ({ request }) => {
+    const me = getCurrentMember(request)
+    if (!me) {
+      return HttpResponse.json({ message: 'Log in om je leningen te bekijken.' }, { status: 401 })
+    }
+    return HttpResponse.json(
+      loans
+        .filter((loan) => loan.borrowerId === me.id || ownerOf(loan.boxId) === me.id)
+        .map(toLoanDto),
+    )
   }),
 ]
