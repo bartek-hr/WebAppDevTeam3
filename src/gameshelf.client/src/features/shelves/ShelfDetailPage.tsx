@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
 import GameCard from '../../components/GameCard'
 import PageSpinner from '../../components/PageSpinner'
+import { useMember } from '../auth/api'
 import { useAuth } from '../auth/useAuth'
 import { useMyCollection } from '../collection/api'
 import { formatEdition } from '../../utils/format'
@@ -34,6 +35,7 @@ export default function ShelfDetailPage() {
         {owned ? 'Mijn planken' : 'Profiel van de eigenaar'}
       </Link>
       <h1 className="mt-3">{shelf.name}</h1>
+      <ShelfOwner memberId={shelf.ownerId} />
       <Badge bg={shelf.isPublic ? 'success' : 'secondary'}>
         {shelf.isPublic ? 'Openbaar' : 'Privé'}
       </Badge>
@@ -121,4 +123,13 @@ export default function ShelfDetailPage() {
       )}
     </>
   )
+}
+
+function ShelfOwner({ memberId }: { memberId: string }) {
+  const owner = useMember(memberId)
+  return owner.data ? (
+    <p>
+      Van <Link to={`/members/${memberId}`}>{owner.data.userName}</Link>
+    </p>
+  ) : null
 }

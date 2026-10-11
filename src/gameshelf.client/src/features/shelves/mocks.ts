@@ -1,5 +1,5 @@
 import { http, HttpResponse, type HttpHandler } from 'msw'
-import { getCurrentMember } from '../auth/mocks'
+import { getCurrentMember, members } from '../auth/mocks'
 import { collectionRecords } from '../collection/mocks'
 import { shelves } from './mockStore'
 import { shelfSchema } from './shelfSchema'
@@ -50,7 +50,12 @@ export const shelvesHandlers: HttpHandler[] = [
   http.get('/api/shelves', ({ request }) => {
     const me = getCurrentMember(request)
     if (!me) return HttpResponse.json({ message: 'Niet ingelogd' }, { status: 401 })
-    return HttpResponse.json(shelves.filter((s) => s.ownerId === me.id))
+    const ownerId = new URL(request.url).searchParams.get('member') ?? me.id
+    if (!members.some((member) => member.id === ownerId))
+      return HttpResponse.json({ message: 'Lid niet gevonden' }, { status: 404 })
+    return HttpResponse.json(
+      shelves.filter((s) => s.ownerId === ownerId && (s.isPublic || s.ownerId === me.id)),
+    )
   }),
   http.post('/api/shelves', async ({ request }) => {
     const me = getCurrentMember(request)

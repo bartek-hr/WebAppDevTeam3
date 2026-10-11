@@ -44,3 +44,11 @@ export function useRemoveShelfRecord() {
     api.delete(`/shelves/${shelfId}/records/${recordId}`),
   )
 }
+
+export function useMemberShelves(memberId: string) {
+  return useQuery({
+    queryKey: ['shelves', 'member', memberId],
+    queryFn: async () =>
+      (await api.get<Shelf[]>('/shelves', { params: { member: memberId } })).data,
+  })
+}
