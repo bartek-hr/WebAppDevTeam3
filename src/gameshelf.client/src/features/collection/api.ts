@@ -3,9 +3,10 @@ import { api } from '../../api/client'
 import type { CollectionRecord, Shelf } from '../../types'
 
 // De collectie van het ingelogde lid
-export function useMyCollection() {
+export function useMyCollection(enabled = true) {
   return useQuery({
     queryKey: ['collection'],
+    enabled,
     queryFn: async () => (await api.get<CollectionRecord[]>('/collection')).data,
   })
 }

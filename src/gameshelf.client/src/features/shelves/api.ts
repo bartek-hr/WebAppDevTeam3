@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
-import type { Shelf } from '../../types'
+import type { CollectionRecord, Shelf } from '../../types'
 import type { ShelfInput } from './shelfSchema'
 
 export function useMyShelves() {
@@ -23,4 +23,24 @@ export function useSaveShelf() {
 }
 export function useDeleteShelf() {
   return useShelfMutation((id: number) => api.delete(`/shelves/${id}`))
+}
+
+export interface ShelfDetail extends Shelf {
+  records: CollectionRecord[]
+}
+export function useShelf(id: number) {
+  return useQuery({
+    queryKey: ['shelves', 'detail', id],
+    queryFn: async () => (await api.get<ShelfDetail>(`/shelves/${id}`)).data,
+  })
+}
+export function useAddShelfRecord() {
+  return useShelfMutation(({ shelfId, recordId }: { shelfId: number; recordId: number }) =>
+    api.post(`/shelves/${shelfId}/records`, { recordId }),
+  )
+}
+export function useRemoveShelfRecord() {
+  return useShelfMutation(({ shelfId, recordId }: { shelfId: number; recordId: number }) =>
+    api.delete(`/shelves/${shelfId}/records/${recordId}`),
+  )
 }
