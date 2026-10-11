@@ -5,6 +5,7 @@ import { shelves } from './mockStore'
 import { shelfSchema } from './shelfSchema'
 
 let nextShelfId = 7
+
 export const shelvesHandlers: HttpHandler[] = [
   http.get('/api/shelves/:id', ({ request, params }) => {
     const me = getCurrentMember(request)

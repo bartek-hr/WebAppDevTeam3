@@ -9,6 +9,7 @@ export function useMyShelves() {
     queryFn: async () => (await api.get<Shelf[]>('/shelves')).data,
   })
 }
+
 export function useShelfMutation<T>(mutationFn: (input: T) => Promise<unknown>) {
   const client = useQueryClient()
   return useMutation({
@@ -16,11 +17,13 @@ export function useShelfMutation<T>(mutationFn: (input: T) => Promise<unknown>) 
     onSuccess: () => client.invalidateQueries({ queryKey: ['shelves'] }),
   })
 }
+
 export function useSaveShelf() {
   return useShelfMutation(({ id, ...values }: ShelfInput & { id?: number }) =>
     id === undefined ? api.post('/shelves', values) : api.put(`/shelves/${id}`, values),
   )
 }
+
 export function useDeleteShelf() {
   return useShelfMutation((id: number) => api.delete(`/shelves/${id}`))
 }
@@ -28,17 +31,20 @@ export function useDeleteShelf() {
 export interface ShelfDetail extends Shelf {
   records: CollectionRecord[]
 }
+
 export function useShelf(id: number) {
   return useQuery({
     queryKey: ['shelves', 'detail', id],
     queryFn: async () => (await api.get<ShelfDetail>(`/shelves/${id}`)).data,
   })
 }
+
 export function useAddShelfRecord() {
   return useShelfMutation(({ shelfId, recordId }: { shelfId: number; recordId: number }) =>
     api.post(`/shelves/${shelfId}/records`, { recordId }),
   )
 }
+
 export function useRemoveShelfRecord() {
   return useShelfMutation(({ shelfId, recordId }: { shelfId: number; recordId: number }) =>
     api.delete(`/shelves/${shelfId}/records/${recordId}`),

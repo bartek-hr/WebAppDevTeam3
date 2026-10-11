@@ -7,6 +7,7 @@ import GamePicker from '../../components/GamePicker'
 import { useAddToCollection } from './api'
 
 const schema = z.object({ gameId: z.number().int().positive('Kies een game.') })
+
 export default function AddCollectionModal({
   excludeIds,
   onClose,
