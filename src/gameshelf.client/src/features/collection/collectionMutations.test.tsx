@@ -6,7 +6,10 @@ import { shelves } from '../shelves/mockStore'
 import CollectionPage from './CollectionPage'
 import { collectionRecords } from './mocks'
 const initial = structuredClone(collectionRecords)
-beforeEach(() => collectionRecords.splice(0, collectionRecords.length, ...structuredClone(initial)))
+beforeEach(() => {
+  collectionRecords.splice(0, collectionRecords.length, ...structuredClone(initial))
+  shelves.splice(0, shelves.length)
+})
 afterEach(() => shelves.splice(0, shelves.length))
 test('toevoegen, duplicaten weigeren en verwijderen van planken', async () => {
   loginAs('m2')
