@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import type { CollectionRecord } from '../../types'
+import EditCollectionModal from './EditCollectionModal'
 import AddCollectionModal from './AddCollectionModal'
 import RemoveCollectionModal from './RemoveCollectionModal'
 import { Alert, Badge, Button, Col, Form, Table } from 'react-bootstrap'
@@ -8,7 +9,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
 import PageSpinner from '../../components/PageSpinner'
 import { formatEdition } from '../../utils/format'
-import { useMyCollection } from './api'
+import { useMyCollection, useUpdateCollectionRecord } from './api'
 import {
   isRecordStatus,
   MAX_IN_PROGRESS,
@@ -20,6 +21,8 @@ import {
 
 // Eigenaar: Joran (zie docs/TAAKVERDELING.md)
 export default function CollectionPage() {
+  const update = useUpdateCollectionRecord()
+  const [editing, setEditing] = useState<CollectionRecord | null>(null)
   const [adding, setAdding] = useState(false)
   const [removing, setRemoving] = useState<CollectionRecord | null>(null)
   const { data: records, isLoading, isError, error } = useMyCollection()
@@ -53,6 +56,14 @@ export default function CollectionPage() {
   return (
     <>
       <h1>Mijn collectie</h1>
+      {update.isError && <Alert variant="danger">{getErrorMessage(update.error)}</Alert>}
+      {editing && (
+        <EditCollectionModal
+          record={editing}
+          records={records ?? []}
+          onClose={() => setEditing(null)}
+        />
+      )}
       <Button className="mb-3" disabled={!records} onClick={() => setAdding(true)}>
         Game toevoegen
       </Button>
@@ -163,14 +174,42 @@ export default function CollectionPage() {
                       {record.note ?? <span className="text-body-secondary">–</span>}
                     </td>
                     <td>
-                      <Button
-                        variant="outline-danger"
-                        size="sm"
-                        aria-label={`Verwijder ${record.game.title}`}
-                        onClick={() => setRemoving(record)}
-                      >
-                        Verwijderen
-                      </Button>
+                      <div className="d-flex flex-wrap gap-2" style={{ minWidth: '12rem' }}>
+                        <Button
+                          size="sm"
+                          variant="outline-primary"
+                          aria-label={`Bewerk ${record.game.title}`}
+                          disabled={update.isPending}
+                          onClick={() => setEditing(record)}
+                        >
+                          Bewerken
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline-success"
+                          aria-label={`+1 gespeeld: ${record.game.title}`}
+                          disabled={update.isPending}
+                          onClick={() =>
+                            update.mutate({
+                              id: record.id,
+                              status: record.status,
+                              plays: record.plays + 1,
+                              rating: record.rating,
+                              note: record.note,
+                            })
+                          }
+                        >
+                          +1 gespeeld
+                        </Button>
+                        <Button
+                          variant="outline-danger"
+                          size="sm"
+                          aria-label={`Verwijder ${record.game.title}`}
+                          onClick={() => setRemoving(record)}
+                        >
+                          Verwijderen
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}

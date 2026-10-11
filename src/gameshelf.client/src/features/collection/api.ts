@@ -37,3 +37,10 @@ export function useRecordShelves(id: number) {
     queryFn: async () => (await api.get<Shelf[]>(`/collection/${id}/shelves`)).data,
   })
 }
+
+export function useUpdateCollectionRecord() {
+  return useCollectionMutation(
+    ({ id, ...values }: import('./recordSchema').RecordInput & { id: number }) =>
+      api.put(`/collection/${id}`, values),
+  )
+}

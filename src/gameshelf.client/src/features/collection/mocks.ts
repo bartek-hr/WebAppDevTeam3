@@ -1,6 +1,7 @@
 import { http, HttpResponse, type HttpHandler } from 'msw'
 import type { CollectionRecord, RecordStatus } from '../../types'
 import { getCurrentMember } from '../auth/mocks'
+import { recordSchema, validateRecordUpdate } from './recordSchema'
 import { shelves } from '../shelves/mockStore'
 import { games } from '../catalogue/mocks'
 
@@ -47,6 +48,28 @@ export const collectionRecords: CollectionRecord[] = [
 let nextRecordId = collectionRecords.length + 1
 
 export const collectionHandlers: HttpHandler[] = [
+  http.put('/api/collection/:id', async ({ request, params }) => {
+    const me = getCurrentMember(request)
+    if (!me) return HttpResponse.json({ message: 'Niet ingelogd' }, { status: 401 })
+    const current = collectionRecords.find((r) => r.id === Number(params.id) && r.ownerId === me.id)
+    if (!current) return HttpResponse.json({ message: 'Record niet gevonden' }, { status: 404 })
+    const parsed = recordSchema.safeParse(await request.json())
+    if (!parsed.success)
+      return HttpResponse.json(
+        { message: 'Controleer status, aantal, beoordeling en notitie.' },
+        { status: 400 },
+      )
+    const message = validateRecordUpdate(current, parsed.data, collectionRecords)
+    if (message) return HttpResponse.json({ message }, { status: 400 })
+    const status = current.plays === 0 && parsed.data.plays > 0 ? 'Played' : parsed.data.status
+    Object.assign(current, {
+      ...parsed.data,
+      status,
+      rating: parsed.data.rating,
+      note: parsed.data.note,
+    })
+    return HttpResponse.json(current)
+  }),
   http.post('/api/collection', async ({ request }) => {
     const me = getCurrentMember(request)
     if (!me) return HttpResponse.json({ message: 'Niet ingelogd' }, { status: 401 })
