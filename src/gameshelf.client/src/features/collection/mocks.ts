@@ -1,4 +1,53 @@
-import type { HttpHandler } from 'msw'
+import { http, HttpResponse, type HttpHandler } from 'msw'
+import type { CollectionRecord, RecordStatus } from '../../types'
+import { getCurrentMember } from '../auth/mocks'
+import { games } from '../catalogue/mocks'
 
-// Eigenaar: Joran. Nep-endpoints voor deze feature (alleen actief als VITE_USE_MOCKS=true).
-export const collectionHandlers: HttpHandler[] = []
+const record = (
+  ownerId: string,
+  gameId: number,
+  status: RecordStatus,
+  plays: number,
+  rating?: number,
+  note?: string,
+): Omit<CollectionRecord, 'id'> => {
+  const game = games.find((g) => g.id === gameId)
+  if (!game) throw new Error(`Mockgame ${gameId} bestaat niet`)
+  return { ownerId, game, status, plays, rating, note }
+}
+
+// Eigenaar: Joran. Collectie-records van de mockleden (id's uit auth/mocks.ts en catalogue/mocks.ts).
+// Planken (shelves/mocks.ts) verwijzen naar de record-id's.
+// daan (m2) zit op het maximum van 3 campagnes, noor (m3) heeft er 1.
+export const collectionRecords: CollectionRecord[] = [
+  // sanne (m1)
+  record('m1', 1, 'Played', 23, 4, 'Uitbreiding 5-6 spelers zit in de doos.'),
+  record('m1', 9, 'Played', 8, 5),
+  record('m1', 14, 'Played', 11, 4, 'Twee konijnen-pionnen kwijt, vervangen door knopen.'),
+  record('m1', 17, 'NotPlayed', 0, undefined, 'Nog op zoek naar een vrije zaterdag.'),
+  // daan (m2)
+  record('m2', 2, 'InProgress', 14, undefined, 'Campagne met de dinsdaggroep, scenario 21.'),
+  record('m2', 6, 'InProgress', 7, undefined, 'Legacy: niet zelf de doos openen!'),
+  record('m2', 8, 'InProgress', 3),
+  record('m2', 3, 'Played', 30, 5, 'Huisregel: de spymaster mag één keer per potje passen.'),
+  record('m2', 12, 'Played', 6, 3),
+  record('m2', 15, 'NotPlayed', 0),
+  record('m2', 11, 'Played', 12, 4, 'Uitbreiding Kroegen & Kathedralen erbij.'),
+  // noor (m3)
+  record('m3', 7, 'InProgress', 2, undefined, 'Pas te beginnen als season 1 uit is.'),
+  record('m3', 13, 'Played', 19, 5),
+  record('m3', 10, 'Played', 4, 3, 'Één trein ontbreekt (blauw).'),
+  record('m3', 16, 'NotPlayed', 0),
+  // thijs (m4)
+  record('m4', 5, 'Played', 2, 2, 'Engelse editie, regelboekje zit los.'),
+  record('m4', 4, 'NotPlayed', 0),
+].map((data, index) => ({ id: index + 1, ...data }))
+
+export const collectionHandlers: HttpHandler[] = [
+  // De collectie van het ingelogde lid
+  http.get('/api/collection', ({ request }) => {
+    const me = getCurrentMember(request)
+    if (!me) return HttpResponse.json({ message: 'Niet ingelogd' }, { status: 401 })
+    return HttpResponse.json(collectionRecords.filter((r) => r.ownerId === me.id))
+  }),
+]
