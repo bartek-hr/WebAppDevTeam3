@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { api } from '../../api/client'
 import type { CollectionRecord, Shelf } from '../../types'
+import type { RecordInput } from './recordSchema'
 
 // De collectie van het ingelogde lid
 export function useMyCollection(enabled = true) {
@@ -40,8 +41,7 @@ export function useRecordShelves(id: number) {
 }
 
 export function useUpdateCollectionRecord() {
-  return useCollectionMutation(
-    ({ id, ...values }: import('./recordSchema').RecordInput & { id: number }) =>
-      api.put(`/collection/${id}`, values),
+  return useCollectionMutation(({ id, ...values }: RecordInput & { id: number }) =>
+    api.put(`/collection/${id}`, values),
   )
 }

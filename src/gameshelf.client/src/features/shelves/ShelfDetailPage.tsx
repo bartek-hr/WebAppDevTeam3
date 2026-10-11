@@ -1,135 +1,127 @@
 import { useState } from 'react'
-import { Alert, Badge, Button, Col, Form, Row } from 'react-bootstrap'
+import { Alert, Button, Col, Form, Row } from 'react-bootstrap'
+import { ArrowLeft, PlusLg, XLg } from 'react-bootstrap-icons'
 import { Link, useParams } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
 import GameCard from '../../components/GameCard'
+import IconButton from '../../components/IconButton'
 import PageSpinner from '../../components/PageSpinner'
-import { useMember } from '../auth/api'
+import { formatEdition } from '../../utils/format'
+import { useMembers } from '../auth/api'
 import { useAuth } from '../auth/useAuth'
 import { useMyCollection } from '../collection/api'
-import { formatEdition } from '../../utils/format'
 import { useAddShelfRecord, useRemoveShelfRecord, useShelf } from './api'
+import ShelfVisibility from './ShelfVisibility'
 
+// Eigenaar: Joran (zie docs/TAAKVERDELING.md)
 export default function ShelfDetailPage() {
   const { id } = useParams()
   const query = useShelf(Number(id))
   const { member } = useAuth()
   const owned = !!query.data && query.data.ownerId === member?.id
   const collection = useMyCollection(owned)
+  const { data: members } = useMembers()
   const add = useAddShelfRecord()
   const remove = useRemoveShelfRecord()
   const [recordId, setRecordId] = useState('')
-  const available = collection.data?.filter((r) => !query.data?.recordIds.includes(r.id)) ?? []
+  const busy = add.isPending || remove.isPending
+
   if (query.isLoading) return <PageSpinner />
-  if (query.isError)
+  if (!query.data)
     return (
       <Alert variant="danger">
         {getErrorMessage(query.error)} <Link to="/shelves">Terug naar mijn planken</Link>
       </Alert>
     )
-  if (!query.data) return null
   const shelf = query.data
+  const owner = members?.find((m) => m.id === shelf.ownerId)
+  const available = collection.data?.filter((r) => !shelf.recordIds.includes(r.id)) ?? []
+
   return (
     <>
-      <Link to={owned ? '/shelves' : `/members/${shelf.ownerId}`}>
-        {owned ? 'Mijn planken' : 'Profiel van de eigenaar'}
+      <Link
+        to={owned ? '/shelves' : `/members/${shelf.ownerId}`}
+        className="small text-decoration-none"
+      >
+        <ArrowLeft className="me-1" />
+        {owned ? 'Mijn planken' : (owner?.userName ?? 'Terug')}
       </Link>
-      <h1 className="mt-3">{shelf.name}</h1>
-      <ShelfOwner memberId={shelf.ownerId} />
-      <Badge bg={shelf.isPublic ? 'success' : 'secondary'}>
-        {shelf.isPublic ? 'Openbaar' : 'Privé'}
-      </Badge>
-      <p className="mt-2">{shelf.description}</p>
-      <p>{shelf.records.length} games</p>
-      {owned && (
-        <>
-          {collection.isLoading && <PageSpinner />}
-          {collection.isError && (
-            <Alert variant="danger">{getErrorMessage(collection.error)}</Alert>
-          )}
-          {collection.data &&
-            (available.length ? (
-              <Form
-                className="mb-3"
-                onSubmit={async (event) => {
-                  event.preventDefault()
-                  try {
-                    await add.mutateAsync({ shelfId: shelf.id, recordId: Number(recordId) })
-                    setRecordId('')
-                  } catch {
-                    /* Fout hieronder */
-                  }
-                }}
-              >
-                <Form.Label htmlFor="shelf-record">Game uit mijn collectie</Form.Label>
-                <div className="d-flex flex-wrap gap-2">
-                  <Form.Select
-                    id="shelf-record"
-                    value={recordId}
-                    onChange={(e) => setRecordId(e.target.value)}
-                    disabled={add.isPending || remove.isPending}
-                    style={{ flex: '1 1 16rem' }}
-                  >
-                    <option value="">Kies een game</option>
-                    {available.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.game.title} ({formatEdition(r.game)})
-                      </option>
-                    ))}
-                  </Form.Select>
-                  <Button type="submit" disabled={!recordId || add.isPending || remove.isPending}>
-                    Toevoegen aan plank
-                  </Button>
-                </div>
-              </Form>
-            ) : (
-              <Alert variant="info">
-                Alle games uit je collectie staan al op deze plank.{' '}
-                <Link to="/collection">Beheer je collectie</Link>.
-              </Alert>
+      <div className="d-flex flex-wrap align-items-center gap-2 mt-2">
+        <h1 className="mb-0">{shelf.name}</h1>
+        <ShelfVisibility isPublic={shelf.isPublic} />
+      </div>
+      <p className="text-body-secondary mt-1">
+        {shelf.description}
+        {!owned && owner && (
+          <>
+            {shelf.description && ' · '}
+            van <Link to={`/members/${shelf.ownerId}`}>{owner.userName}</Link>
+          </>
+        )}
+      </p>
+
+      {owned && collection.isError && (
+        <Alert variant="danger">{getErrorMessage(collection.error)}</Alert>
+      )}
+      {owned && available.length > 0 && (
+        <Form
+          className="d-flex flex-wrap gap-2 mb-3"
+          onSubmit={async (event) => {
+            event.preventDefault()
+            try {
+              await add.mutateAsync({ shelfId: shelf.id, recordId: Number(recordId) })
+              setRecordId('')
+            } catch {
+              /* Fout hieronder */
+            }
+          }}
+        >
+          <Form.Select
+            aria-label="Game uit mijn collectie"
+            value={recordId}
+            onChange={(e) => setRecordId(e.target.value)}
+            disabled={busy}
+            style={{ flex: '1 1 16rem', maxWidth: '32rem' }}
+          >
+            <option value="">Game uit je collectie…</option>
+            {available.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.game.title} ({formatEdition(r.game)})
+              </option>
             ))}
-        </>
+          </Form.Select>
+          <Button type="submit" aria-label="Toevoegen aan plank" disabled={!recordId || busy}>
+            <PlusLg className="me-1" />
+            Toevoegen
+          </Button>
+        </Form>
       )}
       {add.isError && <Alert variant="danger">{getErrorMessage(add.error)}</Alert>}
       {remove.isError && <Alert variant="danger">{getErrorMessage(remove.error)}</Alert>}
+
       {shelf.records.length === 0 && (
         <Alert variant="light" className="border">
           Deze plank is nog leeg.
         </Alert>
       )}
-      <Row className="g-3">
+      <Row xs={1} sm={2} md={3} lg={4} className="g-3">
         {shelf.records.map((r) => (
-          <Col key={r.id} sm={6} lg={4}>
+          <Col key={r.id}>
             <GameCard game={r.game} to={`/catalogue/${r.game.id}`}>
               {owned && (
-                <Button
+                <IconButton
                   variant="outline-danger"
-                  size="sm"
-                  aria-label={`Haal ${r.game.title} van plank`}
-                  disabled={remove.isPending || add.isPending}
+                  icon={<XLg />}
+                  tooltip="Van plank halen"
+                  label={`Haal ${r.game.title} van plank`}
+                  disabled={busy}
                   onClick={() => remove.mutate({ shelfId: shelf.id, recordId: r.id })}
-                >
-                  Van plank halen
-                </Button>
+                />
               )}
             </GameCard>
           </Col>
         ))}
       </Row>
-      {owned && (
-        <p className="small text-body-secondary mt-3">
-          Een game van de plank halen laat hem in je collectie en op je andere planken staan.
-        </p>
-      )}
     </>
   )
-}
-
-function ShelfOwner({ memberId }: { memberId: string }) {
-  const owner = useMember(memberId)
-  return owner.data ? (
-    <p>
-      Van <Link to={`/members/${memberId}`}>{owner.data.userName}</Link>
-    </p>
-  ) : null
 }

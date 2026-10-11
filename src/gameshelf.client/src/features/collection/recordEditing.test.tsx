@@ -51,3 +51,14 @@ test('mock API bewaakt aantal, campagnes, beoordeling en eigendom', async () => 
     response: { status: 404 },
   })
 })
+
+test('wist een beoordeling en verwijdert deze bij een andere status', async () => {
+  loginAs('m3')
+  const url = '/collection/13'
+  const cleared = await api.put(url, { status: 'Played', plays: 19 })
+  expect(cleared.data.rating).toBeUndefined()
+  await api.put(url, { status: 'Played', plays: 19, rating: 5 })
+  const changed = await api.put(url, { status: 'InProgress', plays: 19 })
+  expect(changed.data.status).toBe('InProgress')
+  expect(changed.data.rating).toBeUndefined()
+})

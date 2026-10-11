@@ -21,7 +21,6 @@ export default function EditCollectionModal({
     register,
     control,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<RecordInput>({
     resolver: zodResolver(recordSchema),
@@ -66,11 +65,8 @@ export default function EditCollectionModal({
                 </option>
               ))}
             </Form.Select>
-            {atLimit && (
-              <Form.Text>Maak eerst een campagne af voor je een nieuwe begint.</Form.Text>
-            )}
+            {atLimit && <Form.Text>Maak eerst een campagne af.</Form.Text>}
           </Form.Group>
-          <p>Aantal keer gespeeld: {record.plays}. Gebruik +1 gespeeld om dit te verhogen.</p>
           <Form.Group controlId="record-rating" className="mb-3">
             <Form.Label>Beoordeling</Form.Label>
             <Form.Select
@@ -104,13 +100,7 @@ export default function EditCollectionModal({
           <Button variant="secondary" disabled={update.isPending} onClick={onClose}>
             Annuleren
           </Button>
-          <Button
-            type="submit"
-            disabled={update.isPending}
-            onClick={() => {
-              if (status !== 'Played') setValue('rating', undefined)
-            }}
-          >
+          <Button type="submit" disabled={update.isPending}>
             Opslaan
           </Button>
         </Modal.Footer>

@@ -1,12 +1,15 @@
 import { useState } from 'react'
-import { Alert, Badge, Button, Card, Col, Modal, Row } from 'react-bootstrap'
-import { Link } from 'react-router-dom'
+import { Alert, Button, Col, Modal, Row } from 'react-bootstrap'
+import { PencilSquare, PlusLg, Trash } from 'react-bootstrap-icons'
 import { getErrorMessage } from '../../api/errors'
+import IconButton from '../../components/IconButton'
 import PageSpinner from '../../components/PageSpinner'
 import type { Shelf } from '../../types'
 import { useDeleteShelf, useMyShelves } from './api'
+import ShelfCard from './ShelfCard'
 import ShelfFormModal from './ShelfFormModal'
 
+// Eigenaar: Joran (zie docs/TAAKVERDELING.md)
 export default function ShelvesPage() {
   const query = useMyShelves()
   const remove = useDeleteShelf()
@@ -14,11 +17,13 @@ export default function ShelvesPage() {
   const [removing, setRemoving] = useState<Shelf | null>(null)
   return (
     <>
-      <h1>Mijn planken</h1>
-      <p>Orden je collectie op planken. Je games mogen op meerdere planken staan.</p>
-      <Button className="mb-3" onClick={() => setEditing('new')}>
-        Plank aanmaken
-      </Button>
+      <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <h1 className="mb-0">Mijn planken</h1>
+        <Button onClick={() => setEditing('new')}>
+          <PlusLg className="me-1" />
+          Plank aanmaken
+        </Button>
+      </div>
       {query.isLoading && <PageSpinner />}
       {query.isError && <Alert variant="danger">{getErrorMessage(query.error)}</Alert>}
       {query.data?.length === 0 && (
@@ -26,42 +31,33 @@ export default function ShelvesPage() {
           Je hebt nog geen planken.
         </Alert>
       )}
-      <Row className="g-3">
+      <Row xs={1} md={2} lg={3} className="g-3">
         {query.data?.map((shelf) => (
-          <Col key={shelf.id} md={6} lg={4}>
-            <Card className="h-100">
-              <Card.Body>
-                <Card.Title as="h2" className="h5">
-                  <Link to={`/shelves/${shelf.id}`}>{shelf.name}</Link>
-                </Card.Title>
-                <Badge bg={shelf.isPublic ? 'success' : 'secondary'}>
-                  {shelf.isPublic ? 'Openbaar' : 'Privé'}
-                </Badge>
-                <p className="mt-2">{shelf.description}</p>
-                <p>{shelf.recordIds.length} games</p>
-                <div className="d-flex flex-wrap gap-2">
-                  <Button
-                    size="sm"
+          <Col key={shelf.id}>
+            <ShelfCard
+              shelf={shelf}
+              actions={
+                <>
+                  <IconButton
                     variant="outline-primary"
-                    aria-label={`Bewerk ${shelf.name}`}
+                    icon={<PencilSquare />}
+                    tooltip="Bewerken"
+                    label={`Bewerk ${shelf.name}`}
                     onClick={() => setEditing(shelf)}
-                  >
-                    Bewerken
-                  </Button>
-                  <Button
-                    size="sm"
+                  />
+                  <IconButton
                     variant="outline-danger"
-                    aria-label={`Verwijder ${shelf.name}`}
+                    icon={<Trash />}
+                    tooltip="Verwijderen"
+                    label={`Verwijder ${shelf.name}`}
                     onClick={() => {
                       remove.reset()
                       setRemoving(shelf)
                     }}
-                  >
-                    Verwijderen
-                  </Button>
-                </div>
-              </Card.Body>
-            </Card>
+                  />
+                </>
+              }
+            />
           </Col>
         ))}
       </Row>
@@ -77,7 +73,7 @@ export default function ShelvesPage() {
             <Modal.Title id="delete-shelf-title">Plank verwijderen</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <p>Wil je {removing.name} verwijderen? De games blijven in je collectie.</p>
+            <p>{removing.name} verwijderen? De games blijven in je collectie.</p>
             {remove.isError && <Alert variant="danger">{getErrorMessage(remove.error)}</Alert>}
           </Modal.Body>
           <Modal.Footer>

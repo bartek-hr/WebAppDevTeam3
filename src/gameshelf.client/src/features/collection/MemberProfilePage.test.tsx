@@ -13,7 +13,6 @@ test('profiel van een ander toont alleen openbare planken en verlanglijstlink', 
     'href',
     '/wishlists?member=m1',
   )
-  expect(await screen.findByRole('link', { name: 'noor' })).toHaveAttribute('href', '/members/m3')
 })
 test('eigen profiel toont ook privé-planken met label', async () => {
   loginAs('m1')

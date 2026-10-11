@@ -1,14 +1,13 @@
 import { useState } from 'react'
-import type { CollectionRecord } from '../../types'
-import EditCollectionModal from './EditCollectionModal'
-import AddCollectionModal from './AddCollectionModal'
-import RemoveCollectionModal from './RemoveCollectionModal'
 import { Alert, Badge, Button, Col, Form, Table } from 'react-bootstrap'
-import { Star, StarFill } from 'react-bootstrap-icons'
+import { PencilSquare, PlusLg, Star, StarFill, Trash } from 'react-bootstrap-icons'
 import { Link, useSearchParams } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
+import IconButton from '../../components/IconButton'
 import PageSpinner from '../../components/PageSpinner'
+import type { CollectionRecord } from '../../types'
 import { formatEdition } from '../../utils/format'
+import AddCollectionModal from './AddCollectionModal'
 import { useMyCollection, useUpdateCollectionRecord } from './api'
 import {
   isRecordStatus,
@@ -18,14 +17,16 @@ import {
   STATUS_VARIANTS,
   STATUSES,
 } from './collectionRules'
+import EditCollectionModal from './EditCollectionModal'
+import RemoveCollectionModal from './RemoveCollectionModal'
 
 // Eigenaar: Joran (zie docs/TAAKVERDELING.md)
 export default function CollectionPage() {
-  const update = useUpdateCollectionRecord()
-  const [editing, setEditing] = useState<CollectionRecord | null>(null)
-  const [adding, setAdding] = useState(false)
-  const [removing, setRemoving] = useState<CollectionRecord | null>(null)
   const { data: records, isLoading, isError, error } = useMyCollection()
+  const update = useUpdateCollectionRecord()
+  const [adding, setAdding] = useState(false)
+  const [editing, setEditing] = useState<CollectionRecord | null>(null)
+  const [removing, setRemoving] = useState<CollectionRecord | null>(null)
   // Filters staan in de URL, net als in de catalogus
   const [searchParams, setSearchParams] = useSearchParams()
   const query = searchParams.get('q') ?? ''
@@ -44,6 +45,7 @@ export default function CollectionPage() {
   }
 
   const inProgress = (records ?? []).filter((r) => r.status === 'InProgress').length
+  const atLimit = inProgress >= MAX_IN_PROGRESS
   const search = query.trim().toLowerCase()
   const filtered = (records ?? [])
     .filter((r) => !search || r.game.title.toLowerCase().includes(search))
@@ -55,38 +57,21 @@ export default function CollectionPage() {
 
   return (
     <>
-      <h1>Mijn collectie</h1>
-      {update.isError && <Alert variant="danger">{getErrorMessage(update.error)}</Alert>}
-      {editing && (
-        <EditCollectionModal
-          record={editing}
-          records={records ?? []}
-          onClose={() => setEditing(null)}
-        />
-      )}
-      <Button className="mb-3" disabled={!records} onClick={() => setAdding(true)}>
-        Game toevoegen
-      </Button>
-      {adding && (
-        <AddCollectionModal
-          excludeIds={(records ?? []).map((r) => r.game.id)}
-          onClose={() => setAdding(false)}
-        />
-      )}
-      {removing && <RemoveCollectionModal record={removing} onClose={() => setRemoving(null)} />}
-      <p className="text-body-secondary">
-        Elke game die je bezit, met wat de doos niet vertelt: hoe vaak je hem speelde, wat je ervan
-        vindt en wat er mist.
-      </p>
+      <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+        <h1 className="mb-0">Mijn collectie</h1>
+        <Button disabled={!records} onClick={() => setAdding(true)}>
+          <PlusLg className="me-1" />
+          Game toevoegen
+        </Button>
+      </div>
 
       {records && (
-        <Alert variant={inProgress >= MAX_IN_PROGRESS ? 'warning' : 'light'} className="border">
+        <p className={atLimit ? 'text-warning-emphasis' : 'text-body-secondary'}>
           <strong>
             {inProgress} van {MAX_IN_PROGRESS} campagnes bezig
           </strong>
-          {inProgress >= MAX_IN_PROGRESS &&
-            '. Maak eerst een campagne af voor je een nieuwe begint.'}
-        </Alert>
+          {atLimit && ', maak eerst een campagne af'}
+        </p>
       )}
 
       <Form role="search" className="row g-2 mb-3" onSubmit={(event) => event.preventDefault()}>
@@ -115,6 +100,11 @@ export default function CollectionPage() {
         </Col>
       </Form>
 
+      {update.isError && (
+        <Alert variant="danger" dismissible onClose={() => update.reset()}>
+          {getErrorMessage(update.error)}
+        </Alert>
+      )}
       {isLoading && <PageSpinner />}
       {isError && (
         <Alert variant="danger">
@@ -151,7 +141,9 @@ export default function CollectionPage() {
                   <th className="text-end">Gespeeld</th>
                   <th>Beoordeling</th>
                   <th>Notitie</th>
-                  <th>Acties</th>
+                  <th>
+                    <span className="visually-hidden">Acties</span>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -166,50 +158,48 @@ export default function CollectionPage() {
                         {STATUS_LABELS[record.status]}
                       </Badge>
                     </td>
-                    <td className="text-end">{record.plays}×</td>
+                    <td className="text-end text-nowrap">
+                      {record.plays}×
+                      <IconButton
+                        className="ms-2"
+                        variant="outline-success"
+                        icon={<PlusLg />}
+                        tooltip="+1 gespeeld"
+                        label={`+1 gespeeld: ${record.game.title}`}
+                        disabled={update.isPending}
+                        onClick={() =>
+                          update.mutate({
+                            id: record.id,
+                            status: record.status,
+                            plays: record.plays + 1,
+                            rating: record.rating,
+                            note: record.note,
+                          })
+                        }
+                      />
+                    </td>
                     <td className="text-nowrap">
                       <Rating value={record.rating} />
                     </td>
                     <td className="small" style={{ minWidth: '14rem' }}>
                       {record.note ?? <span className="text-body-secondary">–</span>}
                     </td>
-                    <td>
-                      <div className="d-flex flex-wrap gap-2" style={{ minWidth: '12rem' }}>
-                        <Button
-                          size="sm"
-                          variant="outline-primary"
-                          aria-label={`Bewerk ${record.game.title}`}
-                          disabled={update.isPending}
-                          onClick={() => setEditing(record)}
-                        >
-                          Bewerken
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline-success"
-                          aria-label={`+1 gespeeld: ${record.game.title}`}
-                          disabled={update.isPending}
-                          onClick={() =>
-                            update.mutate({
-                              id: record.id,
-                              status: record.status,
-                              plays: record.plays + 1,
-                              rating: record.rating,
-                              note: record.note,
-                            })
-                          }
-                        >
-                          +1 gespeeld
-                        </Button>
-                        <Button
-                          variant="outline-danger"
-                          size="sm"
-                          aria-label={`Verwijder ${record.game.title}`}
-                          onClick={() => setRemoving(record)}
-                        >
-                          Verwijderen
-                        </Button>
-                      </div>
+                    <td className="text-end text-nowrap">
+                      <IconButton
+                        className="me-1"
+                        variant="outline-primary"
+                        icon={<PencilSquare />}
+                        tooltip="Bewerken"
+                        label={`Bewerk ${record.game.title}`}
+                        onClick={() => setEditing(record)}
+                      />
+                      <IconButton
+                        variant="outline-danger"
+                        icon={<Trash />}
+                        tooltip="Verwijderen"
+                        label={`Verwijder ${record.game.title}`}
+                        onClick={() => setRemoving(record)}
+                      />
                     </td>
                   </tr>
                 ))}
@@ -218,6 +208,21 @@ export default function CollectionPage() {
           )}
         </>
       )}
+
+      {adding && (
+        <AddCollectionModal
+          excludeIds={(records ?? []).map((r) => r.game.id)}
+          onClose={() => setAdding(false)}
+        />
+      )}
+      {editing && (
+        <EditCollectionModal
+          record={editing}
+          records={records ?? []}
+          onClose={() => setEditing(null)}
+        />
+      )}
+      {removing && <RemoveCollectionModal record={removing} onClose={() => setRemoving(null)} />}
     </>
   )
 }

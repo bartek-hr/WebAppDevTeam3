@@ -62,12 +62,7 @@ export const collectionHandlers: HttpHandler[] = [
     const message = validateRecordUpdate(current, parsed.data, collectionRecords)
     if (message) return HttpResponse.json({ message }, { status: 400 })
     const status = current.plays === 0 && parsed.data.plays > 0 ? 'Played' : parsed.data.status
-    Object.assign(current, {
-      ...parsed.data,
-      status,
-      rating: parsed.data.rating,
-      note: parsed.data.note,
-    })
+    Object.assign(current, { ...parsed.data, status, rating: parsed.data.rating })
     return HttpResponse.json(current)
   }),
   http.post('/api/collection', async ({ request }) => {

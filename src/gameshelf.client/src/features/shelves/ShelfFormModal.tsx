@@ -70,7 +70,6 @@ export default function ShelfFormModal({ shelf, onClose }: { shelf?: Shelf; onCl
             {...register('isPublic')}
             disabled={save.isPending}
           />
-          <Form.Text>Een privé-plank is alleen zichtbaar voor jou.</Form.Text>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" disabled={save.isPending} onClick={onClose}>

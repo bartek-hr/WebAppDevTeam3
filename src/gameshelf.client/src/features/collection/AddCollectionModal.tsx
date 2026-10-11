@@ -51,9 +51,6 @@ export default function AddCollectionModal({
               />
             )}
           />
-          <p className="small text-body-secondary mt-3">
-            Nieuwe games beginnen op nog niet gespeeld, met 0 keer gespeeld.
-          </p>
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={onClose} disabled={add.isPending}>
