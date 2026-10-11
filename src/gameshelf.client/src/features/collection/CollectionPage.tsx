@@ -1,3 +1,7 @@
+import { useState } from 'react'
+import type { CollectionRecord } from '../../types'
+import AddCollectionModal from './AddCollectionModal'
+import RemoveCollectionModal from './RemoveCollectionModal'
 import { Alert, Badge, Button, Col, Form, Table } from 'react-bootstrap'
 import { Star, StarFill } from 'react-bootstrap-icons'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -16,6 +20,8 @@ import {
 
 // Eigenaar: Joran (zie docs/TAAKVERDELING.md)
 export default function CollectionPage() {
+  const [adding, setAdding] = useState(false)
+  const [removing, setRemoving] = useState<CollectionRecord | null>(null)
   const { data: records, isLoading, isError, error } = useMyCollection()
   // Filters staan in de URL, net als in de catalogus
   const [searchParams, setSearchParams] = useSearchParams()
@@ -47,6 +53,16 @@ export default function CollectionPage() {
   return (
     <>
       <h1>Mijn collectie</h1>
+      <Button className="mb-3" disabled={!records} onClick={() => setAdding(true)}>
+        Game toevoegen
+      </Button>
+      {adding && (
+        <AddCollectionModal
+          excludeIds={(records ?? []).map((r) => r.game.id)}
+          onClose={() => setAdding(false)}
+        />
+      )}
+      {removing && <RemoveCollectionModal record={removing} onClose={() => setRemoving(null)} />}
       <p className="text-body-secondary">
         Elke game die je bezit, met wat de doos niet vertelt: hoe vaak je hem speelde, wat je ervan
         vindt en wat er mist.
@@ -124,6 +140,7 @@ export default function CollectionPage() {
                   <th className="text-end">Gespeeld</th>
                   <th>Beoordeling</th>
                   <th>Notitie</th>
+                  <th>Acties</th>
                 </tr>
               </thead>
               <tbody>
@@ -144,6 +161,16 @@ export default function CollectionPage() {
                     </td>
                     <td className="small" style={{ minWidth: '14rem' }}>
                       {record.note ?? <span className="text-body-secondary">–</span>}
+                    </td>
+                    <td>
+                      <Button
+                        variant="outline-danger"
+                        size="sm"
+                        aria-label={`Verwijder ${record.game.title}`}
+                        onClick={() => setRemoving(record)}
+                      >
+                        Verwijderen
+                      </Button>
                     </td>
                   </tr>
                 ))}

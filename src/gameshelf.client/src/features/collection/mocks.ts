@@ -1,6 +1,7 @@
 import { http, HttpResponse, type HttpHandler } from 'msw'
 import type { CollectionRecord, RecordStatus } from '../../types'
 import { getCurrentMember } from '../auth/mocks'
+import { shelves } from '../shelves/mockStore'
 import { games } from '../catalogue/mocks'
 
 const record = (
@@ -43,7 +44,48 @@ export const collectionRecords: CollectionRecord[] = [
   record('m4', 4, 'NotPlayed', 0),
 ].map((data, index) => ({ id: index + 1, ...data }))
 
+let nextRecordId = collectionRecords.length + 1
+
 export const collectionHandlers: HttpHandler[] = [
+  http.post('/api/collection', async ({ request }) => {
+    const me = getCurrentMember(request)
+    if (!me) return HttpResponse.json({ message: 'Niet ingelogd' }, { status: 401 })
+    const { gameId } = (await request.json()) as { gameId: number }
+    const game = games.find((g) => g.id === gameId)
+    if (!game) return HttpResponse.json({ message: 'Kies een bestaande game.' }, { status: 400 })
+    if (collectionRecords.some((r) => r.ownerId === me.id && r.game.id === gameId)) {
+      return HttpResponse.json({ message: 'Deze game staat al in je collectie.' }, { status: 409 })
+    }
+    const created: CollectionRecord = {
+      id: nextRecordId++,
+      ownerId: me.id,
+      game,
+      status: 'NotPlayed',
+      plays: 0,
+    }
+    collectionRecords.push(created)
+    return HttpResponse.json(created, { status: 201 })
+  }),
+  http.get('/api/collection/:id/shelves', ({ request, params }) => {
+    const me = getCurrentMember(request)
+    if (!me) return HttpResponse.json({ message: 'Niet ingelogd' }, { status: 401 })
+    const owned = collectionRecords.find((r) => r.id === Number(params.id) && r.ownerId === me.id)
+    if (!owned) return HttpResponse.json({ message: 'Record niet gevonden' }, { status: 404 })
+    return HttpResponse.json(
+      shelves.filter((s) => s.ownerId === me.id && s.recordIds.includes(owned.id)),
+    )
+  }),
+  http.delete('/api/collection/:id', ({ request, params }) => {
+    const me = getCurrentMember(request)
+    if (!me) return HttpResponse.json({ message: 'Niet ingelogd' }, { status: 401 })
+    const index = collectionRecords.findIndex(
+      (r) => r.id === Number(params.id) && r.ownerId === me.id,
+    )
+    if (index < 0) return HttpResponse.json({ message: 'Record niet gevonden' }, { status: 404 })
+    const [removed] = collectionRecords.splice(index, 1)
+    for (const shelf of shelves) shelf.recordIds = shelf.recordIds.filter((id) => id !== removed.id)
+    return new HttpResponse(null, { status: 204 })
+  }),
   // De collectie van het ingelogde lid
   http.get('/api/collection', ({ request }) => {
     const me = getCurrentMember(request)
