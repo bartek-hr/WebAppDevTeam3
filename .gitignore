@@ -392,6 +392,9 @@ FodyWeavers.xsd
 !.vscode/extensions.json
 *.code-workspace
 
+# Zed editor settings (local)
+.zed/
+
 # Local History for Visual Studio Code
 .history/
 
