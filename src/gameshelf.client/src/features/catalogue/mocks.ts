@@ -41,6 +41,8 @@ export const games: Game[] = [
   game('Azul', 'Next Move Games', 2017, 'Abstract', 2, 4, 40),
   game('Mysterium', 'Libellud', 2015, 'Coöperatief', 2, 7, 42),
   game('Twilight Imperium (4e editie)', 'Fantasy Flight Games', 2017, 'Strategie', 3, 6, 480),
+  game('Ticket to Ride', 'Days of Wonder', 2004, 'Familie', 2, 5, 60),
+  game('Dominion', 'Rio Grande Games', 2008, 'Kaartspel', 2, 4, 30),
 ].map((data, index) => ({ id: index + 1, ...data }))
 
 export const catalogueHandlers: HttpHandler[] = [
