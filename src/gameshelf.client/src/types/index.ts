@@ -48,6 +48,7 @@ export interface Box {
   ownerId: string
   game: Game
   condition: string
+  isOnLoan: boolean // berekend door de backend: er is een lening zonder returnedOn
 }
 
 export type LoanRequestStatus = 'Pending' | 'Approved' | 'Rejected'
@@ -57,6 +58,7 @@ export interface LoanRequest {
   boxId: number
   requesterId: string
   status: LoanRequestStatus
+  createdOn: string // volgorde van binnenkomst en "aangevraagd op"
 }
 
 export interface Loan {

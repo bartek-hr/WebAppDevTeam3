@@ -35,10 +35,8 @@ beginnen in je eigen map.
 - **Regels uit de casus:** de backend bewaakt ze straks, de frontend laat ze zien (knop uitschakelen,
   melding tonen). Afgeleide waarden zoals `isLate`, `isValid` en "past de game?" komen als veld uit
   de API. In je mocks reken je ze zelf uit, en niemand zet ze met de hand.
-- **Git:** `dev` is de werkbranch. Per taak (GitHub-issue) maak je een branch vanaf `dev`
-  (`feature/<naam>-<onderwerp>`, bijv. `feature/joran-shelves`) en open je een PR naar `dev`, met
-  minimaal één reviewer uit het team. Zet `Closes #<issuenummer>` in de PR. Niet direct op `dev` of
-  `main` pushen. `dev` gaat naar `main` als er een stabiele versie is (bijv. voor een presentatie).
+- **Git:** branch per taak (`feature/<naam>-<onderwerp>`, bijv. `feature/joran-shelves`), PR naar
+  `main`, minimaal één reviewer uit het team. Niet direct op `main` pushen.
 - **Definition of done:** de pagina werkt met mockdata, is bruikbaar op telefoonbreedte,
   `npm run build` en `npm run lint` slagen, en de PR is gereviewd.
 
