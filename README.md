@@ -52,9 +52,9 @@ worden doorgestuurd naar de backend. De API-documentatie staat op https://localh
 ## Packages
 
 **Frontend:** react-router-dom (routing), @tanstack/react-query + axios (API-calls en caching),
-bootstrap + react-bootstrap + react-bootstrap-icons (UI), react-hook-form + zod + @hookform/resolvers
-(formulieren en validatie), date-fns (datums), msw (nep-API), vitest + @testing-library (tests),
-prettier + oxlint (codestijl).
+react-hook-form + zod + @hookform/resolvers (formulieren en validatie), date-fns (datums),
+msw (nep-API), vitest + @testing-library (tests), prettier + oxlint (codestijl).
+Geen CSS-framework: de opmaak is eigen CSS, zie [docs/STYLING.md](docs/STYLING.md).
 
 **Backend:** Entity Framework Core (SqlServer, Design, Tools), ASP.NET Core Identity, JWT Bearer
 authenticatie, SpaProxy (start de frontend mee) en Scalar (API-documentatie). De tests gebruiken

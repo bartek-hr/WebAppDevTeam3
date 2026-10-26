@@ -1,9 +1,9 @@
 import { useState } from 'react'
-import { Alert, Badge, Button, Col, Form, Table } from 'react-bootstrap'
-import { PencilSquare, PlusLg, Star, StarFill, Trash } from 'react-bootstrap-icons'
 import { Link, useSearchParams } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
+import Alert from '../../components/Alert'
 import IconButton from '../../components/IconButton'
+import { EditIcon, PlusIcon, StarFillIcon, StarIcon, TrashIcon } from '../../components/icons'
 import PageSpinner from '../../components/PageSpinner'
 import type { CollectionRecord } from '../../types'
 import { formatEdition } from '../../utils/format'
@@ -19,6 +19,7 @@ import {
 } from './collectionRules'
 import EditCollectionModal from './EditCollectionModal'
 import RemoveCollectionModal from './RemoveCollectionModal'
+import './CollectionPage.css'
 
 // Eigenaar: Joran (zie docs/TAAKVERDELING.md)
 export default function CollectionPage() {
@@ -57,16 +58,21 @@ export default function CollectionPage() {
 
   return (
     <>
-      <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-        <h1 className="mb-0">Mijn collectie</h1>
-        <Button disabled={!records} onClick={() => setAdding(true)}>
-          <PlusLg className="me-1" />
+      <div className="page-header">
+        <h1>Mijn collectie</h1>
+        <button
+          type="button"
+          className="btn btn--primary"
+          disabled={!records}
+          onClick={() => setAdding(true)}
+        >
+          <PlusIcon />
           Game toevoegen
-        </Button>
+        </button>
       </div>
 
       {records && (
-        <p className={atLimit ? 'text-warning-emphasis' : 'text-body-secondary'}>
+        <p className={atLimit ? 'text-warning' : 'text-muted'}>
           <strong>
             {inProgress} van {MAX_IN_PROGRESS} campagnes bezig
           </strong>
@@ -74,34 +80,32 @@ export default function CollectionPage() {
         </p>
       )}
 
-      <Form role="search" className="row g-2 mb-3" onSubmit={(event) => event.preventDefault()}>
-        <Col md={8}>
-          <Form.Control
-            type="search"
-            placeholder="Zoek op titel"
-            aria-label="Zoek op titel"
-            value={query}
-            onChange={(event) => setFilter('q', event.target.value)}
-          />
-        </Col>
-        <Col md={4}>
-          <Form.Select
-            aria-label="Status"
-            value={status}
-            onChange={(event) => setFilter('status', event.target.value)}
-          >
-            <option value="">Alle statussen</option>
-            {STATUSES.map((value) => (
-              <option key={value} value={value}>
-                {STATUS_LABELS[value]}
-              </option>
-            ))}
-          </Form.Select>
-        </Col>
-      </Form>
+      <form role="search" className="filter-bar" onSubmit={(event) => event.preventDefault()}>
+        <input
+          type="search"
+          className="input filter-bar__search"
+          placeholder="Zoek op titel"
+          aria-label="Zoek op titel"
+          value={query}
+          onChange={(event) => setFilter('q', event.target.value)}
+        />
+        <select
+          className="input"
+          aria-label="Status"
+          value={status}
+          onChange={(event) => setFilter('status', event.target.value)}
+        >
+          <option value="">Alle statussen</option>
+          {STATUSES.map((value) => (
+            <option key={value} value={value}>
+              {STATUS_LABELS[value]}
+            </option>
+          ))}
+        </select>
+      </form>
 
       {update.isError && (
-        <Alert variant="danger" dismissible onClose={() => update.reset()}>
+        <Alert variant="danger" onClose={() => update.reset()}>
           {getErrorMessage(update.error)}
         </Alert>
       )}
@@ -112,99 +116,101 @@ export default function CollectionPage() {
         </Alert>
       )}
       {records && records.length === 0 && (
-        <Alert variant="light" className="border">
-          Je collectie is nog leeg.
-        </Alert>
+        <Alert variant="neutral">Je collectie is nog leeg.</Alert>
       )}
       {records && records.length > 0 && (
         <>
-          <p className="small text-body-secondary">
+          <p className="text-small text-muted">
             {filtered.length} van {records.length} games
           </p>
           {filtered.length === 0 ? (
-            <Alert variant="light" className="border">
+            <Alert variant="neutral">
               Geen games gevonden met deze filters.{' '}
-              <Button
-                variant="link"
-                className="p-0 align-baseline"
+              <button
+                type="button"
+                className="btn btn--link"
                 onClick={() => setSearchParams({}, { replace: true })}
               >
                 Filters wissen
-              </Button>
+              </button>
             </Alert>
           ) : (
-            <Table responsive hover className="align-middle">
-              <thead>
-                <tr>
-                  <th>Game</th>
-                  <th>Status</th>
-                  <th className="text-end">Gespeeld</th>
-                  <th>Beoordeling</th>
-                  <th>Notitie</th>
-                  <th>
-                    <span className="visually-hidden">Acties</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((record) => (
-                  <tr key={record.id}>
-                    <td style={{ minWidth: '12rem' }}>
-                      <Link to={`/catalogue/${record.game.id}`}>{record.game.title}</Link>
-                      <div className="small text-body-secondary">{formatEdition(record.game)}</div>
-                    </td>
-                    <td>
-                      <Badge bg={STATUS_VARIANTS[record.status]}>
-                        {STATUS_LABELS[record.status]}
-                      </Badge>
-                    </td>
-                    <td className="text-end text-nowrap">
-                      {record.plays}×
-                      <IconButton
-                        className="ms-2"
-                        variant="outline-success"
-                        icon={<PlusLg />}
-                        tooltip="+1 gespeeld"
-                        label={`+1 gespeeld: ${record.game.title}`}
-                        disabled={update.isPending}
-                        onClick={() =>
-                          update.mutate({
-                            id: record.id,
-                            status: record.status,
-                            plays: record.plays + 1,
-                            rating: record.rating,
-                            note: record.note,
-                          })
-                        }
-                      />
-                    </td>
-                    <td className="text-nowrap">
-                      <Rating value={record.rating} />
-                    </td>
-                    <td className="small" style={{ minWidth: '14rem' }}>
-                      {record.note ?? <span className="text-body-secondary">–</span>}
-                    </td>
-                    <td className="text-end text-nowrap">
-                      <IconButton
-                        className="me-1"
-                        variant="outline-primary"
-                        icon={<PencilSquare />}
-                        tooltip="Bewerken"
-                        label={`Bewerk ${record.game.title}`}
-                        onClick={() => setEditing(record)}
-                      />
-                      <IconButton
-                        variant="outline-danger"
-                        icon={<Trash />}
-                        tooltip="Verwijderen"
-                        label={`Verwijder ${record.game.title}`}
-                        onClick={() => setRemoving(record)}
-                      />
-                    </td>
+            <div className="table-scroll">
+              <table className="table table--hover">
+                <thead>
+                  <tr>
+                    <th>Game</th>
+                    <th>Status</th>
+                    <th className="text-end">Gespeeld</th>
+                    <th>Beoordeling</th>
+                    <th>Notitie</th>
+                    <th>
+                      <span className="visually-hidden">Acties</span>
+                    </th>
                   </tr>
-                ))}
-              </tbody>
-            </Table>
+                </thead>
+                <tbody>
+                  {filtered.map((record) => (
+                    <tr key={record.id}>
+                      <td className="collection-page__game">
+                        <Link to={`/catalogue/${record.game.id}`}>{record.game.title}</Link>
+                        <div className="text-small text-muted">{formatEdition(record.game)}</div>
+                      </td>
+                      <td>
+                        <span className={`badge badge--${STATUS_VARIANTS[record.status]}`}>
+                          {STATUS_LABELS[record.status]}
+                        </span>
+                      </td>
+                      <td className="text-end nowrap">
+                        <span className="collection-page__plays">
+                          {record.plays}×
+                          <IconButton
+                            variant="outline-success"
+                            icon={<PlusIcon />}
+                            tooltip="+1 gespeeld"
+                            label={`+1 gespeeld: ${record.game.title}`}
+                            disabled={update.isPending}
+                            onClick={() =>
+                              update.mutate({
+                                id: record.id,
+                                status: record.status,
+                                plays: record.plays + 1,
+                                rating: record.rating,
+                                note: record.note,
+                              })
+                            }
+                          />
+                        </span>
+                      </td>
+                      <td className="nowrap">
+                        <Rating value={record.rating} />
+                      </td>
+                      <td className="collection-page__note text-small">
+                        {record.note ?? <span className="text-muted">–</span>}
+                      </td>
+                      <td className="text-end nowrap">
+                        <span className="collection-page__actions">
+                          <IconButton
+                            variant="outline-primary"
+                            icon={<EditIcon />}
+                            tooltip="Bewerken"
+                            label={`Bewerk ${record.game.title}`}
+                            onClick={() => setEditing(record)}
+                          />
+                          <IconButton
+                            variant="outline-danger"
+                            icon={<TrashIcon />}
+                            tooltip="Verwijderen"
+                            label={`Verwijder ${record.game.title}`}
+                            onClick={() => setRemoving(record)}
+                          />
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </>
       )}
@@ -228,11 +234,11 @@ export default function CollectionPage() {
 }
 
 function Rating({ value }: { value?: number }) {
-  if (value === undefined) return <span className="text-body-secondary">–</span>
+  if (value === undefined) return <span className="text-muted">–</span>
   return (
-    <span className="text-warning" title={`${value} van ${MAX_RATING} sterren`}>
+    <span className="collection-page__rating" title={`${value} van ${MAX_RATING} sterren`}>
       {Array.from({ length: MAX_RATING }, (_, i) =>
-        i < value ? <StarFill key={i} aria-hidden /> : <Star key={i} aria-hidden />,
+        i < value ? <StarFillIcon key={i} /> : <StarIcon key={i} />,
       )}
       <span className="visually-hidden">
         {value} van {MAX_RATING} sterren

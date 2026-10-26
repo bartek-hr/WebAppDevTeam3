@@ -1,93 +1,119 @@
-import { Badge, Container, Nav, Navbar, NavDropdown } from 'react-bootstrap'
-import { BoxArrowRight, PersonCircle } from 'react-bootstrap-icons'
+import { useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import MockMemberSwitcher from '../features/auth/MockMemberSwitcher'
 import { useAuth } from '../features/auth/useAuth'
+import { LogoutIcon, MenuIcon, PersonIcon } from './icons'
+import NavMenu from './NavMenu'
+import './Layout.css'
 
 const useMocks = import.meta.env.VITE_USE_MOCKS === 'true'
 
 export default function Layout() {
   const { member, isCommittee, logout } = useAuth()
+  // Op smalle schermen zit het menu achter de menuknop
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <>
-      <Navbar bg="dark" data-bs-theme="dark" expand="lg" className="mb-4">
-        <Container>
-          <Navbar.Brand as={NavLink} to="/">
+      <header className="navbar">
+        <div className="container navbar__inner">
+          <NavLink to="/" className="navbar__brand">
             GameShelf
-          </Navbar.Brand>
-          <Navbar.Toggle aria-controls="main-nav" />
-          <Navbar.Collapse id="main-nav">
-            <Nav className="me-auto">
-              <Nav.Link as={NavLink} to="/catalogue">
-                Catalogus
-              </Nav.Link>
-              <NavDropdown title="Mijn spellen">
-                <NavDropdown.Item as={NavLink} to="/collection">
-                  Collectie
-                </NavDropdown.Item>
-                <NavDropdown.Item as={NavLink} to="/shelves">
-                  Planken
-                </NavDropdown.Item>
-              </NavDropdown>
-              <NavDropdown title="Uitlenen">
-                <NavDropdown.Item as={NavLink} to="/lending">
-                  Uitleenlijst
-                </NavDropdown.Item>
-                <NavDropdown.Item as={NavLink} to="/lending/mine">
-                  Mijn uitleningen
-                </NavDropdown.Item>
-              </NavDropdown>
-              <Nav.Link as={NavLink} to="/sessions">
-                Spelavonden
-              </Nav.Link>
-              <NavDropdown title="Ruilen">
-                <NavDropdown.Item as={NavLink} to="/wishlists">
-                  Verlanglijsten
-                </NavDropdown.Item>
-                <NavDropdown.Item as={NavLink} to="/wishlists/mine">
-                  Mijn verlanglijst
-                </NavDropdown.Item>
-                <NavDropdown.Item as={NavLink} to="/offers">
-                  Mijn biedingen
-                </NavDropdown.Item>
-              </NavDropdown>
-            </Nav>
+          </NavLink>
+          <button
+            type="button"
+            className="navbar__toggle"
+            aria-controls="main-nav"
+            aria-expanded={menuOpen}
+            aria-label="Menu"
+            onClick={() => setMenuOpen((open) => !open)}
+          >
+            <MenuIcon />
+          </button>
+          <nav
+            id="main-nav"
+            className={menuOpen ? 'navbar__nav is-open' : 'navbar__nav'}
+            aria-label="Hoofdmenu"
+            // Na het kiezen van een pagina gaat het menu op smalle schermen weer dicht
+            onClick={(event) => {
+              if ((event.target as HTMLElement).closest('a')) setMenuOpen(false)
+            }}
+          >
+            <ul className="navbar__links">
+              <li>
+                <NavLink to="/catalogue" className="navbar__link">
+                  Catalogus
+                </NavLink>
+              </li>
+              <li>
+                <NavMenu label="Mijn spellen">
+                  <NavLink to="/collection" className="nav-menu__item">
+                    Collectie
+                  </NavLink>
+                  <NavLink to="/shelves" className="nav-menu__item">
+                    Planken
+                  </NavLink>
+                </NavMenu>
+              </li>
+              <li>
+                <NavMenu label="Uitlenen">
+                  <NavLink to="/lending" end className="nav-menu__item">
+                    Uitleenlijst
+                  </NavLink>
+                  <NavLink to="/lending/mine" className="nav-menu__item">
+                    Mijn uitleningen
+                  </NavLink>
+                </NavMenu>
+              </li>
+              <li>
+                <NavLink to="/sessions" className="navbar__link">
+                  Spelavonden
+                </NavLink>
+              </li>
+              <li>
+                <NavMenu label="Ruilen">
+                  <NavLink to="/wishlists" end className="nav-menu__item">
+                    Verlanglijsten
+                  </NavLink>
+                  <NavLink to="/wishlists/mine" className="nav-menu__item">
+                    Mijn verlanglijst
+                  </NavLink>
+                  <NavLink to="/offers" className="nav-menu__item">
+                    Mijn biedingen
+                  </NavLink>
+                </NavMenu>
+              </li>
+            </ul>
             {member && (
-              <Nav>
-                <NavDropdown
-                  align="end"
-                  id="user-menu"
-                  title={
+              <div className="navbar__user">
+                <NavMenu
+                  alignEnd
+                  label={
                     <>
-                      <PersonCircle className="me-1" />
+                      <PersonIcon />
                       {member.userName}
-                      {isCommittee && (
-                        <Badge bg="warning" text="dark" className="ms-2">
-                          Bestuur
-                        </Badge>
-                      )}
+                      {isCommittee && <span className="badge badge--warning">Bestuur</span>}
                     </>
                   }
                 >
-                  <NavDropdown.Item as={NavLink} to={`/members/${member.id}`}>
+                  <NavLink to={`/members/${member.id}`} className="nav-menu__item">
                     Mijn profiel
-                  </NavDropdown.Item>
+                  </NavLink>
                   {useMocks && <MockMemberSwitcher />}
-                  <NavDropdown.Divider />
-                  <NavDropdown.Item as="button" onClick={logout}>
-                    <BoxArrowRight className="me-2" />
+                  <hr className="nav-menu__divider" />
+                  <button type="button" className="nav-menu__item" onClick={logout}>
+                    <LogoutIcon />
                     Uitloggen
-                  </NavDropdown.Item>
-                </NavDropdown>
-              </Nav>
+                  </button>
+                </NavMenu>
+              </div>
             )}
-          </Navbar.Collapse>
-        </Container>
-      </Navbar>
-      <Container className="pb-5">
+          </nav>
+        </div>
+      </header>
+      <div className="container page-content">
         <Outlet />
-      </Container>
+      </div>
     </>
   )
 }

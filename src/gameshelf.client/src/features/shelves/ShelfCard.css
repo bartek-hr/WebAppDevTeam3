@@ -1,0 +1,22 @@
+/* Kaart van een plank: naam en zichtbaarheid bovenaan, aantal games en knoppen onderaan */
+
+.shelf-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* Een lange naam loopt door op een nieuwe regel, het label (openbaar/privé) blijft heel */
+.shelf-card__title {
+  min-width: 0;
+  font-size: var(--font-size-lg);
+  overflow-wrap: break-word;
+}
+
+.shelf-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}

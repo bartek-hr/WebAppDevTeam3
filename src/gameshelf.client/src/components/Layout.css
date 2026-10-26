@@ -1,0 +1,248 @@
+/* Navigatiebalk bovenaan elke pagina (behalve inloggen en registreren) */
+
+.navbar {
+  margin-bottom: var(--space-4);
+  background-color: var(--color-nav-bg);
+}
+
+.navbar__inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  padding-block: var(--space-2);
+}
+
+.navbar__brand {
+  padding-block: 0.3125rem;
+  margin-right: var(--space-3);
+  font-size: var(--font-size-lg);
+  color: var(--color-nav-text-active);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.navbar__brand:hover {
+  color: var(--color-nav-text-active);
+}
+
+/* Menuknop (drie streepjes), alleen op smalle schermen */
+.navbar__toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  font-size: var(--font-size-lg);
+  line-height: 1.5;
+  color: var(--color-nav-text);
+  background: transparent;
+  border: 1px solid rgb(255 255 255 / 0.15);
+  border-radius: var(--radius);
+  transition: box-shadow var(--transition);
+}
+
+.navbar__toggle:hover {
+  color: var(--color-nav-text-active);
+}
+
+.navbar__toggle:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: 0 0 0 0.25rem rgb(255 255 255 / 0.25);
+}
+
+/* Smalle schermen: het menu staat onder de balk en is dicht tot je op de menuknop drukt */
+.navbar__nav {
+  display: none;
+  flex-basis: 100%;
+  padding-block: var(--space-2);
+}
+
+.navbar__nav.is-open {
+  display: block;
+}
+
+.navbar__links {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* Links en menuknoppen in de balk zien er hetzelfde uit */
+.navbar__link,
+.nav-menu__toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: var(--space-2) 0;
+  font-size: 1rem;
+  color: var(--color-nav-text);
+  text-decoration: none;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius);
+  transition: color var(--transition);
+}
+
+.navbar__link:hover,
+.navbar__link[aria-current='page'],
+.nav-menu__toggle:hover,
+.nav-menu__toggle[aria-expanded='true'] {
+  color: var(--color-nav-text-active);
+}
+
+.navbar__link:focus-visible,
+.nav-menu__toggle:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: 0 0 0 0.2rem rgb(255 255 255 / 0.35);
+}
+
+/* Pijltje naar beneden achter de knop van een uitklapmenu */
+.nav-menu__toggle::after {
+  content: '';
+  margin-left: 0.125rem;
+  border-top: 0.3em solid;
+  border-inline: 0.3em solid transparent;
+  transition: rotate var(--transition);
+}
+
+.nav-menu__toggle[aria-expanded='true']::after {
+  rotate: 180deg;
+}
+
+.nav-menu {
+  position: relative;
+}
+
+/* De lijst met links van een uitklapmenu */
+.nav-menu__list {
+  padding: var(--space-1) 0 var(--space-1) var(--space-3);
+}
+
+.nav-menu__item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: 0.375rem var(--space-3);
+  font-size: 1rem;
+  color: var(--color-nav-text);
+  text-align: start;
+  text-decoration: none;
+  white-space: nowrap;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius);
+}
+
+.nav-menu__item:hover,
+.nav-menu__item:focus-visible {
+  color: var(--color-nav-text-active);
+}
+
+.nav-menu__item[aria-current] {
+  color: var(--color-nav-text-active);
+  font-weight: 500;
+}
+
+.nav-menu__divider {
+  margin: var(--space-2) 0;
+  border-top-color: rgb(255 255 255 / 0.15);
+}
+
+.nav-menu__header {
+  padding: var(--space-2) var(--space-3) var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-nav-text);
+  white-space: nowrap;
+}
+
+.navbar__user {
+  border-top: 1px solid rgb(255 255 255 / 0.15);
+  margin-top: var(--space-2);
+  padding-top: var(--space-2);
+}
+
+/* Brede schermen: alles op één regel, uitklapmenu's zweven als witte lijst onder de knop */
+@media (min-width: 992px) {
+  .navbar__toggle {
+    display: none;
+  }
+
+  .navbar__nav,
+  .navbar__nav.is-open {
+    display: flex;
+    flex-basis: auto;
+    flex-grow: 1;
+    align-items: center;
+    justify-content: space-between;
+    padding-block: 0;
+  }
+
+  .navbar__links {
+    flex-direction: row;
+  }
+
+  .navbar__link,
+  .nav-menu__toggle {
+    padding: var(--space-2);
+  }
+
+  .navbar__user {
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .nav-menu__list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: var(--z-dropdown);
+    min-width: 11rem;
+    padding: var(--space-2) 0;
+    margin-top: 0.125rem;
+    background-color: var(--color-surface);
+    border: 1px solid rgb(0 0 0 / 0.15);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    animation: menu-in 0.12s ease-out;
+  }
+
+  .nav-menu--end .nav-menu__list {
+    right: 0;
+    left: auto;
+  }
+
+  .nav-menu__item {
+    color: var(--color-text);
+    border-radius: 0;
+  }
+
+  .nav-menu__item:hover,
+  .nav-menu__item:focus-visible {
+    color: var(--color-text);
+    background-color: var(--color-surface-muted);
+    outline: none;
+  }
+
+  .nav-menu__item[aria-current] {
+    color: var(--color-text-inverse);
+    background-color: var(--color-primary);
+  }
+
+  .nav-menu__divider {
+    border-top-color: var(--color-border);
+  }
+
+  .nav-menu__header {
+    color: var(--color-text-muted);
+  }
+}
+
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+}

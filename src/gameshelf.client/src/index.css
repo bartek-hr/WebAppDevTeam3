@@ -1,3 +1,10 @@
-body {
-  background-color: var(--bs-tertiary-bg);
-}
+/*
+ * Alle algemene stijlen van GameShelf, zonder CSS-framework.
+ * Volgorde is belangrijk: latere bestanden winnen bij gelijke specificiteit.
+ * Stijlen voor één component staan in een eigen .css-bestand naast dat component.
+ */
+@import './styles/tokens.css';
+@import './styles/base.css';
+@import './styles/layout.css';
+@import './styles/components.css';
+@import './styles/utilities.css';

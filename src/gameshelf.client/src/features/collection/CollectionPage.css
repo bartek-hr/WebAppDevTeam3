@@ -1,0 +1,27 @@
+/* Collectietabel: kolommen met een minimale breedte, knoppen en sterren */
+
+/* Titel en editie niet te smal, ook als de tabel opzij scrollt */
+.collection-page__game {
+  min-width: 12rem;
+}
+
+.collection-page__note {
+  min-width: 14rem;
+}
+
+/* Aantal keer gespeeld met de +1-knop ernaast */
+.collection-page__plays {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Bewerken en verwijderen naast elkaar, rechts uitgelijnd door .text-end op de cel */
+.collection-page__actions {
+  display: inline-flex;
+  gap: var(--space-1);
+}
+
+.collection-page__rating {
+  color: var(--color-star);
+}

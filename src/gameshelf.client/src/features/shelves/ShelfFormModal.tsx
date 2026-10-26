@@ -1,7 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Alert, Button, Form, Modal } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import { getErrorMessage } from '../../api/errors'
+import Alert from '../../components/Alert'
+import Modal from '../../components/Modal'
 import type { Shelf } from '../../types'
 import { useSaveShelf } from './api'
 import { shelfSchema, type ShelfInput } from './shelfSchema'
@@ -21,13 +22,8 @@ export default function ShelfFormModal({ shelf, onClose }: { shelf?: Shelf; onCl
     },
   })
   return (
-    <Modal show onHide={onClose} aria-labelledby="shelf-form-title">
-      <Modal.Header closeButton>
-        <Modal.Title id="shelf-form-title">
-          {shelf ? 'Plank bewerken' : 'Plank aanmaken'}
-        </Modal.Title>
-      </Modal.Header>
-      <Form
+    <Modal title={shelf ? 'Plank bewerken' : 'Plank aanmaken'} onClose={onClose}>
+      <form
         noValidate
         onSubmit={handleSubmit(async (values) => {
           try {
@@ -38,48 +34,74 @@ export default function ShelfFormModal({ shelf, onClose }: { shelf?: Shelf; onCl
           }
         })}
       >
-        <Modal.Body>
+        <div className="modal__body">
           {save.isError && <Alert variant="danger">{getErrorMessage(save.error)}</Alert>}
-          <Form.Group controlId="shelf-name" className="mb-3">
-            <Form.Label>Naam</Form.Label>
-            <Form.Control
-              autoFocus
+          <div className="field">
+            <label htmlFor="shelf-name" className="field__label">
+              Naam
+            </label>
+            <input
+              id="shelf-name"
+              className="input"
+              data-autofocus
+              aria-invalid={!!errors.name}
+              aria-describedby={errors.name ? 'shelf-name-error' : undefined}
               {...register('name')}
-              isInvalid={!!errors.name}
               disabled={save.isPending}
             />
-            <Form.Control.Feedback type="invalid">{errors.name?.message}</Form.Control.Feedback>
-          </Form.Group>
-          <Form.Group controlId="shelf-description" className="mb-3">
-            <Form.Label>Beschrijving</Form.Label>
-            <Form.Control
-              as="textarea"
+            {errors.name && (
+              <div id="shelf-name-error" className="field__error">
+                {errors.name.message}
+              </div>
+            )}
+          </div>
+          <div className="field">
+            <label htmlFor="shelf-description" className="field__label">
+              Beschrijving
+            </label>
+            <textarea
+              id="shelf-description"
+              className="input"
               rows={3}
+              aria-invalid={!!errors.description}
+              aria-describedby={errors.description ? 'shelf-description-error' : undefined}
               {...register('description')}
-              isInvalid={!!errors.description}
               disabled={save.isPending}
             />
-            <Form.Control.Feedback type="invalid">
-              {errors.description?.message}
-            </Form.Control.Feedback>
-          </Form.Group>
-          <Form.Check
-            type="switch"
-            id="shelf-public"
-            label="Openbaar"
-            {...register('isPublic')}
+            {errors.description && (
+              <div id="shelf-description-error" className="field__error">
+                {errors.description.message}
+              </div>
+            )}
+          </div>
+          <div className="switch">
+            <input
+              type="checkbox"
+              role="switch"
+              id="shelf-public"
+              className="switch__input"
+              {...register('isPublic')}
+              disabled={save.isPending}
+            />
+            <label htmlFor="shelf-public" className="switch__label">
+              Openbaar
+            </label>
+          </div>
+        </div>
+        <div className="modal__footer">
+          <button
+            type="button"
+            className="btn btn--secondary"
             disabled={save.isPending}
-          />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" disabled={save.isPending} onClick={onClose}>
+            onClick={onClose}
+          >
             Annuleren
-          </Button>
-          <Button type="submit" disabled={save.isPending}>
+          </button>
+          <button type="submit" className="btn btn--primary" disabled={save.isPending}>
             Opslaan
-          </Button>
-        </Modal.Footer>
-      </Form>
+          </button>
+        </div>
+      </form>
     </Modal>
   )
 }

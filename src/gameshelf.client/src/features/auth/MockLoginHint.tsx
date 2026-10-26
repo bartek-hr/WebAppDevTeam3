@@ -1,6 +1,7 @@
-import { Alert, Button } from 'react-bootstrap'
+import Alert from '../../components/Alert'
 import { useMembers } from './api'
 import { useAuth } from './useAuth'
+import './MockLoginHint.css'
 
 // Alleen in mockmodus: met één klik inloggen als een van de mockleden
 export default function MockLoginHint() {
@@ -8,19 +9,18 @@ export default function MockLoginHint() {
   const { data: members = [] } = useMembers()
 
   return (
-    <Alert variant="info" className="small mt-3 mb-0">
+    <Alert variant="info" className="mock-login-hint">
       <strong>Mockmodus:</strong> log in met een mocklid, elk wachtwoord werkt. Snel inloggen als:{' '}
       {members.map((member) => (
-        <Button
+        <button
           key={member.id}
-          variant="link"
-          size="sm"
-          className="p-0 me-2 align-baseline"
+          type="button"
+          className="btn btn--link mock-login-hint__member"
           onClick={() => login({ userNameOrEmail: member.userName, password: 'mock' })}
         >
           {member.userName}
           {member.isCommittee && ' (bestuur)'}
-        </Button>
+        </button>
       ))}
     </Alert>
   )

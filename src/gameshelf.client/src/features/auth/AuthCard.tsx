@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Card, Container } from 'react-bootstrap'
+import './AuthCard.css'
 
 interface AuthCardProps {
   title: string
@@ -10,15 +10,15 @@ interface AuthCardProps {
 // Gedeelde opmaak voor inloggen en registreren (zonder navbar)
 export default function AuthCard({ title, children, footer }: AuthCardProps) {
   return (
-    <Container className="py-5" style={{ maxWidth: 440 }}>
-      <p className="h3 text-center mb-4">GameShelf</p>
-      <Card className="shadow-sm">
-        <Card.Body className="p-4">
-          <h1 className="h5 mb-3">{title}</h1>
+    <div className="auth-card">
+      <p className="auth-card__brand">GameShelf</p>
+      <div className="card">
+        <div className="card__body auth-card__body">
+          <h1 className="auth-card__title">{title}</h1>
           {children}
-        </Card.Body>
-      </Card>
-      {footer && <p className="text-center mt-3">{footer}</p>}
-    </Container>
+        </div>
+      </div>
+      {footer && <p className="auth-card__footer">{footer}</p>}
+    </div>
   )
 }

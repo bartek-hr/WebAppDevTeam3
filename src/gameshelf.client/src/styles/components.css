@@ -1,0 +1,790 @@
+/*
+ * Gedeelde componenten: knoppen, formulieren, badges, meldingen, kaarten, tabellen,
+ * kruimelpad, dialoogvenster, laadindicator en tooltip.
+ * Namen volgen BEM: .blok, .blok__onderdeel en .blok--variant
+ */
+
+/* ---------- Knoppen ---------- */
+
+/* Elke variant zet alleen een paar variabelen; .btn gebruikt ze */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--btn-color, var(--color-text));
+  text-align: center;
+  text-decoration: none;
+  vertical-align: middle;
+  user-select: none;
+  background-color: var(--btn-bg, transparent);
+  border: 1px solid var(--btn-border, transparent);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition:
+    color var(--transition),
+    background-color var(--transition),
+    border-color var(--transition),
+    box-shadow var(--transition);
+}
+
+.btn:hover {
+  color: var(--btn-hover-color, var(--btn-color, var(--color-text)));
+  background-color: var(--btn-hover-bg, var(--btn-bg, transparent));
+  border-color: var(--btn-hover-border, var(--btn-border, transparent));
+}
+
+.btn:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--focus-ring);
+}
+
+.btn:disabled,
+.btn[aria-disabled='true'] {
+  opacity: 0.65;
+  cursor: default;
+  pointer-events: none;
+}
+
+.btn--primary {
+  --btn-color: var(--color-text-inverse);
+  --btn-bg: var(--color-primary);
+  --btn-border: var(--color-primary);
+  --btn-hover-bg: var(--color-primary-hover);
+  --btn-hover-border: var(--color-primary-hover);
+}
+
+.btn--secondary {
+  --btn-color: var(--color-text-inverse);
+  --btn-bg: var(--color-secondary);
+  --btn-border: var(--color-secondary);
+  --btn-hover-bg: var(--color-secondary-hover);
+  --btn-hover-border: var(--color-secondary-hover);
+}
+
+.btn--danger {
+  --btn-color: var(--color-text-inverse);
+  --btn-bg: var(--color-danger);
+  --btn-border: var(--color-danger);
+  --btn-hover-bg: var(--color-danger-hover);
+  --btn-hover-border: var(--color-danger-hover);
+}
+
+.btn--outline-primary {
+  --btn-color: var(--color-primary);
+  --btn-border: var(--color-primary);
+  --btn-hover-color: var(--color-text-inverse);
+  --btn-hover-bg: var(--color-primary);
+}
+
+.btn--outline-secondary {
+  --btn-color: var(--color-secondary-text);
+  --btn-border: var(--color-border-strong);
+  --btn-hover-color: var(--color-text-inverse);
+  --btn-hover-bg: var(--color-secondary);
+  --btn-hover-border: var(--color-secondary);
+}
+
+.btn--outline-success {
+  --btn-color: var(--color-success);
+  --btn-border: var(--color-success);
+  --btn-hover-color: var(--color-text-inverse);
+  --btn-hover-bg: var(--color-success);
+}
+
+.btn--outline-danger {
+  --btn-color: var(--color-danger);
+  --btn-border: var(--color-danger);
+  --btn-hover-color: var(--color-text-inverse);
+  --btn-hover-bg: var(--color-danger);
+}
+
+/* Ziet eruit als een link, gedraagt zich als een knop (bijv. "Filters wissen") */
+.btn--link {
+  --btn-color: var(--color-primary);
+  --btn-hover-color: var(--color-primary-hover);
+  display: inline;
+  padding: 0;
+  font-size: inherit;
+  vertical-align: baseline;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+  border: 0;
+}
+
+.btn--sm {
+  padding: 0.25rem 0.5rem;
+  font-size: var(--font-size-sm);
+  border-radius: var(--radius-sm);
+}
+
+/* Vierkante knop met alleen een icoon */
+.btn--icon {
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+}
+
+.btn--icon.btn--sm {
+  width: 1.875rem;
+  height: 1.875rem;
+}
+
+.btn--block {
+  width: 100%;
+}
+
+/* Kruisje om een melding of dialoog te sluiten */
+.close-btn {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  font-size: 1rem;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius);
+  opacity: 0.6;
+  transition:
+    opacity var(--transition),
+    background-color var(--transition);
+}
+
+.close-btn:hover {
+  background-color: rgb(0 0 0 / 0.06);
+  opacity: 1;
+}
+
+.close-btn:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--focus-ring);
+  opacity: 1;
+}
+
+/* ---------- Formulieren ---------- */
+
+/* Eén veld: label, invoer, foutmelding en/of hulptekst */
+.field {
+  margin-bottom: var(--space-3);
+}
+
+.field__label {
+  margin-bottom: var(--space-2);
+}
+
+/* Tekstvak, keuzelijst, tekstgebied en bestandskiezer */
+.input {
+  display: block;
+  width: 100%;
+  padding: 0.375rem 0.75rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--color-text);
+  background-color: var(--color-surface);
+  background-clip: padding-box;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius);
+  appearance: none;
+  transition:
+    border-color var(--transition),
+    box-shadow var(--transition);
+}
+
+.input::placeholder {
+  color: var(--color-text-muted);
+  opacity: 1;
+}
+
+.input:focus {
+  border-color: #86a8f0;
+  outline: 2px solid transparent;
+  box-shadow: var(--focus-ring);
+}
+
+.input:disabled {
+  color: var(--color-text-muted);
+  background-color: var(--color-surface-muted);
+  cursor: not-allowed;
+}
+
+/* Fout in het veld: zet aria-invalid="true", dan hoort een schermlezer het ook */
+.input[aria-invalid='true'] {
+  border-color: var(--color-danger);
+}
+
+.input[aria-invalid='true']:focus {
+  border-color: var(--color-danger);
+  box-shadow: var(--focus-ring-danger);
+}
+
+/* Keuzelijst met een eigen pijltje, getekend met twee driehoekjes */
+select.input {
+  padding-right: 2.25rem;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--color-text-muted) 50%),
+    linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.25rem) 55%,
+    calc(100% - 0.9375rem) 55%;
+  background-size: 0.3125rem 0.3125rem;
+  background-repeat: no-repeat;
+}
+
+textarea.input {
+  min-height: calc(1.5em + 0.75rem + 2px);
+  resize: vertical;
+}
+
+/* Bestandskiezer: de knop krijgt dezelfde stijl als de rest van het veld */
+.input[type='file'] {
+  padding: 0;
+  overflow: hidden;
+}
+
+.input[type='file']::file-selector-button {
+  padding: 0.375rem 0.75rem;
+  margin-right: 0.75rem;
+  font: inherit;
+  color: var(--color-text);
+  background-color: var(--color-surface-muted);
+  border: 0;
+  border-right: 1px solid var(--color-border-strong);
+  cursor: pointer;
+  transition: background-color var(--transition);
+}
+
+.input[type='file']:hover::file-selector-button {
+  background-color: var(--color-border);
+}
+
+.field__error {
+  margin-top: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-danger);
+}
+
+.field__hint {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* Invoerveld met een knop er direct aan vast */
+.input-group {
+  display: flex;
+  align-items: stretch;
+}
+
+.input-group > .input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.input-group > .btn {
+  margin-left: -1px;
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.input-group > :focus {
+  position: relative;
+  z-index: 1;
+}
+
+/* Aan/uit-schakelaar: een checkbox met role="switch", het bolletje is een radial-gradient */
+.switch {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.switch__input {
+  --switch-knob: var(--color-border-strong);
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 1.25rem;
+  margin: 0;
+  background-color: var(--color-surface);
+  background-image: radial-gradient(circle closest-side, var(--switch-knob) 70%, transparent 75%);
+  background-position: left center;
+  background-size: 1.125rem 1.125rem;
+  background-repeat: no-repeat;
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-pill);
+  appearance: none;
+  cursor: pointer;
+  transition:
+    background-position var(--transition),
+    background-color var(--transition),
+    border-color var(--transition);
+}
+
+.switch__input:checked {
+  --switch-knob: var(--color-text-inverse);
+  background-color: var(--color-primary);
+  background-position: right center;
+  border-color: var(--color-primary);
+}
+
+.switch__input:focus-visible {
+  outline: 2px solid transparent;
+  box-shadow: var(--focus-ring);
+}
+
+.switch__input:disabled,
+.switch__input:disabled + .switch__label {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* ---------- Badges ---------- */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  padding: 0.35em 0.65em;
+  font-size: 0.75em;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--badge-color, var(--color-secondary-text));
+  white-space: nowrap;
+  vertical-align: baseline;
+  background-color: var(--badge-bg, var(--color-secondary-subtle));
+  border: 1px solid var(--badge-border, transparent);
+  border-radius: var(--radius);
+}
+
+.badge--primary {
+  --badge-color: var(--color-primary-text);
+  --badge-bg: var(--color-primary-subtle);
+}
+
+.badge--secondary {
+  --badge-color: var(--color-secondary-text);
+  --badge-bg: var(--color-secondary-subtle);
+}
+
+.badge--success {
+  --badge-color: var(--color-success-text);
+  --badge-bg: var(--color-success-subtle);
+}
+
+.badge--warning {
+  --badge-color: var(--color-warning-text);
+  --badge-bg: var(--color-warning-subtle);
+}
+
+.badge--danger {
+  --badge-color: var(--color-danger-text);
+  --badge-bg: var(--color-danger-subtle);
+}
+
+/* Lichte badge met een rand, bijv. aantal spelers en speelduur */
+.badge--outline {
+  --badge-color: var(--color-text);
+  --badge-bg: var(--color-surface);
+  --badge-border: var(--color-border);
+}
+
+/* ---------- Meldingen ---------- */
+
+.alert {
+  position: relative;
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+  color: var(--alert-color, var(--color-text));
+  background-color: var(--alert-bg, var(--color-surface));
+  border: 1px solid var(--alert-border, var(--color-border));
+  border-radius: var(--radius);
+}
+
+.alert > :last-child {
+  margin-bottom: 0;
+}
+
+.alert--danger {
+  --alert-color: var(--color-danger-text);
+  --alert-bg: var(--color-danger-subtle);
+  --alert-border: var(--color-danger-border);
+}
+
+.alert--warning {
+  --alert-color: var(--color-warning-text);
+  --alert-bg: var(--color-warning-subtle);
+  --alert-border: var(--color-warning-border);
+}
+
+.alert--info {
+  --alert-color: var(--color-info-text);
+  --alert-bg: var(--color-info-subtle);
+  --alert-border: var(--color-info-border);
+}
+
+.alert--success {
+  --alert-color: var(--color-success-text);
+  --alert-bg: var(--color-success-subtle);
+  --alert-border: var(--color-success-border);
+}
+
+/* Neutrale melding, bijv. "nog leeg" of "niets gevonden" */
+.alert--neutral {
+  --alert-color: var(--color-text);
+  --alert-bg: var(--color-surface);
+  --alert-border: var(--color-border);
+}
+
+.alert--dismissible {
+  padding-right: 3rem;
+}
+
+.alert__close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+/* ---------- Kaarten ---------- */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  height: 100%;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition:
+    box-shadow var(--transition),
+    border-color var(--transition);
+}
+
+.card__body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  padding: var(--space-3);
+}
+
+.card__title {
+  margin-bottom: var(--space-1);
+}
+
+.card__subtitle {
+  margin: 0 0 var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.card__text {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* Afbeelding bovenaan: alleen de bovenhoeken rond */
+.card__img {
+  border-top-left-radius: calc(var(--radius-lg) - 1px);
+  border-top-right-radius: calc(var(--radius-lg) - 1px);
+}
+
+/* Duwt de rest naar de onderkant van de kaart */
+.card__footer {
+  margin-top: auto;
+}
+
+/* Klikbare kaart: de link in de titel bedekt met ::after de hele kaart */
+.card__link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.card__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.card__link:hover {
+  color: inherit;
+}
+
+.card__link:focus-visible {
+  outline: none;
+}
+
+.card:has(.card__link:hover) {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow);
+}
+
+.card:has(.card__link:focus-visible) {
+  box-shadow: var(--focus-ring);
+}
+
+/* Knoppen in een klikbare kaart liggen boven de link, zodat ze klikbaar blijven */
+.card__actions {
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- Tabellen ---------- */
+
+/*
+ * Een brede tabel scrollt opzij in plaats van de hele pagina. position: relative houdt ook
+ * absoluut geplaatste elementen (zoals .visually-hidden) binnen de scrollbox.
+ */
+.table-scroll {
+  position: relative;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  margin-bottom: var(--space-3);
+  background-color: var(--color-surface);
+}
+
+.table th,
+.table td {
+  padding: 0.5rem;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.table thead th {
+  vertical-align: bottom;
+  border-bottom-color: var(--color-border-strong);
+}
+
+.table--hover tbody tr {
+  transition: background-color var(--transition);
+}
+
+.table--hover tbody tr:hover {
+  background-color: rgb(0 0 0 / 0.035);
+}
+
+/* ---------- Kruimelpad ---------- */
+
+.breadcrumb {
+  display: flex;
+  flex-wrap: wrap;
+  padding: 0;
+  margin: 0 0 var(--space-3);
+  list-style: none;
+}
+
+/* Schuine streep tussen de stappen, alleen voor de stijl (geen echte tekst) */
+.breadcrumb li + li::before {
+  content: '/';
+  padding-inline: var(--space-2);
+  color: var(--color-text-muted);
+}
+
+.breadcrumb [aria-current='page'] {
+  color: var(--color-text-muted);
+}
+
+/* ---------- Dialoogvenster (<dialog>) ---------- */
+
+/*
+ * Het <dialog>-element vult het hele scherm en scrollt als de inhoud te lang is.
+ * De witte doos is .modal__content; klikken ernaast (op de dialog zelf) sluit het venster.
+ */
+.modal {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  padding: 1.75rem var(--space-3);
+  margin: 0;
+  overflow-y: auto;
+  color: var(--color-text);
+  background: transparent;
+  border: 0;
+}
+
+.modal::backdrop {
+  background-color: var(--color-backdrop);
+  animation: fade-in 0.15s ease-out;
+}
+
+.modal__content {
+  position: relative;
+  max-width: 31.25rem;
+  margin-inline: auto;
+  background-color: var(--color-surface);
+  background-clip: padding-box;
+  border: 1px solid rgb(0 0 0 / 0.175);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  animation: modal-in 0.2s ease-out;
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.modal__title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  line-height: 1.5;
+}
+
+.modal__body {
+  padding: var(--space-3);
+}
+
+.modal__body > :last-child {
+  margin-bottom: 0;
+}
+
+.modal__footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: 0.75rem var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+/* De pagina eronder scrollt niet mee zolang er een dialoog open is */
+body:has(.modal[open]) {
+  overflow: hidden;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-in {
+  from {
+    opacity: 0;
+    transform: translateY(-1rem);
+  }
+}
+
+/* ---------- Laadindicator ---------- */
+
+.spinner {
+  display: inline-block;
+  width: 2rem;
+  height: 2rem;
+  border: 0.25em solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+}
+
+.page-spinner {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--space-5);
+  color: var(--color-text-muted);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation-duration: 1.5s;
+  }
+}
+
+/* ---------- Tooltip ---------- */
+
+/*
+ * Zet data-tooltip="tekst" op een element; ::after toont de tekst en ::before het pijltje.
+ * Zichtbaar bij hover (alleen met een muis) en bij focus met het toetsenbord.
+ */
+[data-tooltip] {
+  position: relative;
+}
+
+[data-tooltip]::before,
+[data-tooltip]::after {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  z-index: var(--z-tooltip);
+  display: none;
+  pointer-events: none;
+}
+
+[data-tooltip]::before {
+  content: '';
+  translate: -50% 0;
+  border: 0.3rem solid transparent;
+  border-top-color: var(--color-tooltip-bg);
+  border-bottom-width: 0;
+  margin-bottom: 0.1rem;
+}
+
+[data-tooltip]::after {
+  content: attr(data-tooltip);
+  translate: -50% 0;
+  padding: 0.25rem 0.5rem;
+  margin-bottom: 0.4rem;
+  font-size: var(--font-size-sm);
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--color-text-inverse);
+  white-space: nowrap;
+  background-color: var(--color-tooltip-bg);
+  border-radius: var(--radius);
+}
+
+/* In de laatste tabelkolom lijnt de tooltip rechts uit, zodat hij niet buiten de tabel valt */
+.table td:last-child [data-tooltip]::after {
+  left: auto;
+  right: 0;
+  translate: none;
+}
+
+[data-tooltip]:focus-visible::before,
+[data-tooltip]:focus-visible::after {
+  display: block;
+  animation: tooltip-in 0.15s ease-out;
+}
+
+@media (hover: hover) {
+  [data-tooltip]:hover::before,
+  [data-tooltip]:hover::after {
+    display: block;
+    animation: tooltip-in 0.15s ease-out;
+  }
+}
+
+@keyframes tooltip-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.25rem);
+  }
+}

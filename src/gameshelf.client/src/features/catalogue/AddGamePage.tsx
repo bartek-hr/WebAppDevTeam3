@@ -1,12 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState, type ChangeEvent } from 'react'
-import { Alert, Button, Card, Col, Form, Row } from 'react-bootstrap'
 import { useForm, useWatch } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
+import Alert from '../../components/Alert'
 import { formatEdition } from '../../utils/format'
 import { useCreateGame, useGames } from './api'
 import { findDuplicate, findEditions, gameSchema, type NewGame } from './gameSchema'
+import './AddGamePage.css'
 
 const MAX_IMAGE_BYTES = 2 * 1024 * 1024
 
@@ -66,161 +67,229 @@ export default function AddGamePage() {
   }
 
   return (
-    <Row className="justify-content-center">
-      <Col lg={8}>
-        <h1>Game toevoegen</h1>
-        <p className="text-body-secondary">
-          Mist er een game in de catalogus? Voeg hem toe, dan kan iedereen hem gebruiken in hun
-          collectie, uitleenlijst en verlanglijst.
-        </p>
+    <div className="page-narrow">
+      <h1>Game toevoegen</h1>
+      <p className="text-muted">
+        Mist er een game in de catalogus? Voeg hem toe, dan kan iedereen hem gebruiken in hun
+        collectie, uitleenlijst en verlanglijst.
+      </p>
 
-        {createGame.isError && <Alert variant="danger">{getErrorMessage(createGame.error)}</Alert>}
+      {createGame.isError && <Alert variant="danger">{getErrorMessage(createGame.error)}</Alert>}
 
-        <Card className="shadow-sm">
-          <Card.Body>
-            <Form noValidate onSubmit={handleSubmit(onSubmit)}>
-              <Form.Group className="mb-3" controlId="title">
-                <Form.Label>Titel</Form.Label>
-                <Form.Control autoFocus isInvalid={!!errors.title} {...register('title')} />
-                <Form.Control.Feedback type="invalid">
-                  {errors.title?.message}
-                </Form.Control.Feedback>
-              </Form.Group>
-
-              <Row>
-                <Form.Group as={Col} sm={8} className="mb-3" controlId="publisher">
-                  <Form.Label>Uitgever</Form.Label>
-                  <Form.Control isInvalid={!!errors.publisher} {...register('publisher')} />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.publisher?.message}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                <Form.Group as={Col} sm={4} className="mb-3" controlId="releaseYear">
-                  <Form.Label>Jaar van uitgave</Form.Label>
-                  <Form.Control
-                    type="number"
-                    inputMode="numeric"
-                    isInvalid={!!errors.releaseYear}
-                    {...register('releaseYear', { valueAsNumber: true })}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.releaseYear?.message}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Row>
-
-              {duplicate ? (
-                <Alert variant="warning">
-                  Deze editie staat al in de catalogus:{' '}
-                  <Link to={`/catalogue/${duplicate.id}`}>
-                    {duplicate.title} ({formatEdition(duplicate)})
-                  </Link>
-                  .
-                </Alert>
-              ) : (
-                otherEditions.length > 0 && (
-                  <Alert variant="info">
-                    Er {otherEditions.length === 1 ? 'staat' : 'staan'} al{' '}
-                    {otherEditions.length === 1 ? 'een andere editie' : 'andere edities'} van deze
-                    titel in de catalogus (
-                    {otherEditions.map((edition) => formatEdition(edition)).join('; ')}). Een andere
-                    doos is een aparte game, dus dat mag.
-                  </Alert>
-                )
+      <div className="card">
+        <div className="card__body">
+          <form noValidate onSubmit={handleSubmit(onSubmit)}>
+            <div className="field">
+              <label htmlFor="title" className="field__label">
+                Titel
+              </label>
+              <input
+                id="title"
+                className="input"
+                autoFocus
+                aria-invalid={!!errors.title}
+                aria-describedby={errors.title ? 'title-error' : undefined}
+                {...register('title')}
+              />
+              {errors.title && (
+                <div id="title-error" className="field__error">
+                  {errors.title.message}
+                </div>
               )}
+            </div>
 
-              <Row>
-                <Form.Group as={Col} sm={8} className="mb-3" controlId="category">
-                  <Form.Label>Categorie</Form.Label>
-                  <Form.Control
-                    list="category-options"
-                    isInvalid={!!errors.category}
-                    {...register('category')}
-                  />
-                  <datalist id="category-options">
-                    {categories.map((name) => (
-                      <option key={name} value={name} />
-                    ))}
-                  </datalist>
-                  <Form.Control.Feedback type="invalid">
-                    {errors.category?.message}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                <Form.Group as={Col} sm={4} className="mb-3" controlId="playingTimeMinutes">
-                  <Form.Label>Speelduur (minuten)</Form.Label>
-                  <Form.Control
-                    type="number"
-                    inputMode="numeric"
-                    min={1}
-                    isInvalid={!!errors.playingTimeMinutes}
-                    {...register('playingTimeMinutes', { valueAsNumber: true })}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.playingTimeMinutes?.message}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Row>
-
-              <Row>
-                <Form.Group as={Col} xs={6} className="mb-3" controlId="minPlayers">
-                  <Form.Label>Min. spelers</Form.Label>
-                  <Form.Control
-                    type="number"
-                    inputMode="numeric"
-                    min={1}
-                    isInvalid={!!errors.minPlayers}
-                    {...register('minPlayers', { valueAsNumber: true })}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.minPlayers?.message}
-                  </Form.Control.Feedback>
-                </Form.Group>
-                <Form.Group as={Col} xs={6} className="mb-3" controlId="maxPlayers">
-                  <Form.Label>Max. spelers</Form.Label>
-                  <Form.Control
-                    type="number"
-                    inputMode="numeric"
-                    min={1}
-                    isInvalid={!!errors.maxPlayers}
-                    {...register('maxPlayers', { valueAsNumber: true })}
-                  />
-                  <Form.Control.Feedback type="invalid">
-                    {errors.maxPlayers?.message}
-                  </Form.Control.Feedback>
-                </Form.Group>
-              </Row>
-
-              <Form.Group className="mb-3" controlId="boxImage">
-                <Form.Label>Foto van de doos (optioneel)</Form.Label>
-                <Form.Control
-                  type="file"
-                  accept="image/*"
-                  isInvalid={!!imageError}
-                  onChange={handleImageChange}
+            <div className="field-row">
+              <div className="field">
+                <label htmlFor="publisher" className="field__label">
+                  Uitgever
+                </label>
+                <input
+                  id="publisher"
+                  className="input"
+                  aria-invalid={!!errors.publisher}
+                  aria-describedby={errors.publisher ? 'publisher-error' : undefined}
+                  {...register('publisher')}
                 />
-                <Form.Control.Feedback type="invalid">{imageError}</Form.Control.Feedback>
-                {boxImageUrl && (
-                  <img
-                    src={boxImageUrl}
-                    alt="Voorbeeld van de foto"
-                    className="mt-2 rounded border"
-                    style={{ maxHeight: 160 }}
-                  />
+                {errors.publisher && (
+                  <div id="publisher-error" className="field__error">
+                    {errors.publisher.message}
+                  </div>
                 )}
-              </Form.Group>
-
-              <div className="d-flex gap-2">
-                <Button type="submit" disabled={isSubmitting || !!duplicate}>
-                  {isSubmitting ? 'Bezig met toevoegen…' : 'Toevoegen'}
-                </Button>
-                <Link to="/catalogue" className="btn btn-outline-secondary">
-                  Annuleren
-                </Link>
               </div>
-            </Form>
-          </Card.Body>
-        </Card>
-      </Col>
-    </Row>
+              <div className="field">
+                <label htmlFor="releaseYear" className="field__label">
+                  Jaar van uitgave
+                </label>
+                <input
+                  id="releaseYear"
+                  type="number"
+                  inputMode="numeric"
+                  className="input"
+                  aria-invalid={!!errors.releaseYear}
+                  aria-describedby={errors.releaseYear ? 'releaseYear-error' : undefined}
+                  {...register('releaseYear', { valueAsNumber: true })}
+                />
+                {errors.releaseYear && (
+                  <div id="releaseYear-error" className="field__error">
+                    {errors.releaseYear.message}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {duplicate ? (
+              <Alert variant="warning">
+                Deze editie staat al in de catalogus:{' '}
+                <Link to={`/catalogue/${duplicate.id}`}>
+                  {duplicate.title} ({formatEdition(duplicate)})
+                </Link>
+                .
+              </Alert>
+            ) : (
+              otherEditions.length > 0 && (
+                <Alert variant="info">
+                  Er {otherEditions.length === 1 ? 'staat' : 'staan'} al{' '}
+                  {otherEditions.length === 1 ? 'een andere editie' : 'andere edities'} van deze
+                  titel in de catalogus (
+                  {otherEditions.map((edition) => formatEdition(edition)).join('; ')}). Een andere
+                  doos is een aparte game, dus dat mag.
+                </Alert>
+              )
+            )}
+
+            <div className="field-row">
+              <div className="field">
+                <label htmlFor="category" className="field__label">
+                  Categorie
+                </label>
+                <input
+                  id="category"
+                  className="input"
+                  list="category-options"
+                  aria-invalid={!!errors.category}
+                  aria-describedby={errors.category ? 'category-error' : undefined}
+                  {...register('category')}
+                />
+                <datalist id="category-options">
+                  {categories.map((name) => (
+                    <option key={name} value={name} />
+                  ))}
+                </datalist>
+                {errors.category && (
+                  <div id="category-error" className="field__error">
+                    {errors.category.message}
+                  </div>
+                )}
+              </div>
+              <div className="field">
+                <label htmlFor="playingTimeMinutes" className="field__label">
+                  Speelduur (minuten)
+                </label>
+                <input
+                  id="playingTimeMinutes"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  className="input"
+                  aria-invalid={!!errors.playingTimeMinutes}
+                  aria-describedby={
+                    errors.playingTimeMinutes ? 'playingTimeMinutes-error' : undefined
+                  }
+                  {...register('playingTimeMinutes', { valueAsNumber: true })}
+                />
+                {errors.playingTimeMinutes && (
+                  <div id="playingTimeMinutes-error" className="field__error">
+                    {errors.playingTimeMinutes.message}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="field-row field-row--equal">
+              <div className="field">
+                <label htmlFor="minPlayers" className="field__label">
+                  Min. spelers
+                </label>
+                <input
+                  id="minPlayers"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  className="input"
+                  aria-invalid={!!errors.minPlayers}
+                  aria-describedby={errors.minPlayers ? 'minPlayers-error' : undefined}
+                  {...register('minPlayers', { valueAsNumber: true })}
+                />
+                {errors.minPlayers && (
+                  <div id="minPlayers-error" className="field__error">
+                    {errors.minPlayers.message}
+                  </div>
+                )}
+              </div>
+              <div className="field">
+                <label htmlFor="maxPlayers" className="field__label">
+                  Max. spelers
+                </label>
+                <input
+                  id="maxPlayers"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  className="input"
+                  aria-invalid={!!errors.maxPlayers}
+                  aria-describedby={errors.maxPlayers ? 'maxPlayers-error' : undefined}
+                  {...register('maxPlayers', { valueAsNumber: true })}
+                />
+                {errors.maxPlayers && (
+                  <div id="maxPlayers-error" className="field__error">
+                    {errors.maxPlayers.message}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="field">
+              <label htmlFor="boxImage" className="field__label">
+                Foto van de doos (optioneel)
+              </label>
+              <input
+                id="boxImage"
+                type="file"
+                accept="image/*"
+                className="input"
+                aria-invalid={!!imageError}
+                aria-describedby={imageError ? 'boxImage-error' : undefined}
+                onChange={handleImageChange}
+              />
+              {imageError && (
+                <div id="boxImage-error" className="field__error">
+                  {imageError}
+                </div>
+              )}
+              {boxImageUrl && (
+                <img
+                  src={boxImageUrl}
+                  alt="Voorbeeld van de foto"
+                  className="add-game-page__preview"
+                />
+              )}
+            </div>
+
+            <div className="cluster">
+              <button
+                type="submit"
+                className="btn btn--primary"
+                disabled={isSubmitting || !!duplicate}
+              >
+                {isSubmitting ? 'Bezig met toevoegen…' : 'Toevoegen'}
+              </button>
+              <Link to="/catalogue" className="btn btn--outline-secondary">
+                Annuleren
+              </Link>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   )
 }

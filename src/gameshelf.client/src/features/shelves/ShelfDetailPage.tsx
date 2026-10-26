@@ -1,17 +1,18 @@
 import { useState } from 'react'
-import { Alert, Button, Col, Form, Row } from 'react-bootstrap'
-import { ArrowLeft, PlusLg, XLg } from 'react-bootstrap-icons'
 import { Link, useParams } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
+import Alert from '../../components/Alert'
 import GameCard from '../../components/GameCard'
 import IconButton from '../../components/IconButton'
 import PageSpinner from '../../components/PageSpinner'
+import { ArrowLeftIcon, PlusIcon, XIcon } from '../../components/icons'
 import { formatEdition } from '../../utils/format'
 import { useMembers } from '../auth/api'
 import { useAuth } from '../auth/useAuth'
 import { useMyCollection } from '../collection/api'
 import { useAddShelfRecord, useRemoveShelfRecord, useShelf } from './api'
 import ShelfVisibility from './ShelfVisibility'
+import './ShelfDetailPage.css'
 
 // Eigenaar: Joran (zie docs/TAAKVERDELING.md)
 export default function ShelfDetailPage() {
@@ -41,16 +42,16 @@ export default function ShelfDetailPage() {
     <>
       <Link
         to={owned ? '/shelves' : `/members/${shelf.ownerId}`}
-        className="small text-decoration-none"
+        className="shelf-detail-page__back"
       >
-        <ArrowLeft className="me-1" />
+        <ArrowLeftIcon />
         {owned ? 'Mijn planken' : (owner?.userName ?? 'Terug')}
       </Link>
-      <div className="d-flex flex-wrap align-items-center gap-2 mt-2">
-        <h1 className="mb-0">{shelf.name}</h1>
+      <div className="cluster shelf-detail-page__header">
+        <h1>{shelf.name}</h1>
         <ShelfVisibility isPublic={shelf.isPublic} />
       </div>
-      <p className="text-body-secondary mt-1">
+      <p className="text-muted shelf-detail-page__description">
         {shelf.description}
         {!owned && owner && (
           <>
@@ -64,8 +65,8 @@ export default function ShelfDetailPage() {
         <Alert variant="danger">{getErrorMessage(collection.error)}</Alert>
       )}
       {owned && available.length > 0 && (
-        <Form
-          className="d-flex flex-wrap gap-2 mb-3"
+        <form
+          className="cluster shelf-detail-page__add"
           onSubmit={async (event) => {
             event.preventDefault()
             try {
@@ -76,12 +77,12 @@ export default function ShelfDetailPage() {
             }
           }}
         >
-          <Form.Select
+          <select
+            className="input shelf-detail-page__select"
             aria-label="Game uit mijn collectie"
             value={recordId}
             onChange={(e) => setRecordId(e.target.value)}
             disabled={busy}
-            style={{ flex: '1 1 16rem', maxWidth: '32rem' }}
           >
             <option value="">Game uit je collectie…</option>
             {available.map((r) => (
@@ -89,39 +90,38 @@ export default function ShelfDetailPage() {
                 {r.game.title} ({formatEdition(r.game)})
               </option>
             ))}
-          </Form.Select>
-          <Button type="submit" aria-label="Toevoegen aan plank" disabled={!recordId || busy}>
-            <PlusLg className="me-1" />
+          </select>
+          <button
+            type="submit"
+            className="btn btn--primary"
+            aria-label="Toevoegen aan plank"
+            disabled={!recordId || busy}
+          >
+            <PlusIcon />
             Toevoegen
-          </Button>
-        </Form>
+          </button>
+        </form>
       )}
       {add.isError && <Alert variant="danger">{getErrorMessage(add.error)}</Alert>}
       {remove.isError && <Alert variant="danger">{getErrorMessage(remove.error)}</Alert>}
 
-      {shelf.records.length === 0 && (
-        <Alert variant="light" className="border">
-          Deze plank is nog leeg.
-        </Alert>
-      )}
-      <Row xs={1} sm={2} md={3} lg={4} className="g-3">
+      {shelf.records.length === 0 && <Alert variant="neutral">Deze plank is nog leeg.</Alert>}
+      <div className="card-grid">
         {shelf.records.map((r) => (
-          <Col key={r.id}>
-            <GameCard game={r.game} to={`/catalogue/${r.game.id}`}>
-              {owned && (
-                <IconButton
-                  variant="outline-danger"
-                  icon={<XLg />}
-                  tooltip="Van plank halen"
-                  label={`Haal ${r.game.title} van plank`}
-                  disabled={busy}
-                  onClick={() => remove.mutate({ shelfId: shelf.id, recordId: r.id })}
-                />
-              )}
-            </GameCard>
-          </Col>
+          <GameCard key={r.id} game={r.game} to={`/catalogue/${r.game.id}`}>
+            {owned && (
+              <IconButton
+                variant="outline-danger"
+                icon={<XIcon />}
+                tooltip="Van plank halen"
+                label={`Haal ${r.game.title} van plank`}
+                disabled={busy}
+                onClick={() => remove.mutate({ shelfId: shelf.id, recordId: r.id })}
+              />
+            )}
+          </GameCard>
         ))}
-      </Row>
+      </div>
     </>
   )
 }

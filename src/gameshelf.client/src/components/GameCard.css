@@ -1,0 +1,9 @@
+/* Kaart van een game: kleine titel, badges altijd onderaan de kaart (via .card__footer) */
+.game-card__title {
+  font-size: 1rem;
+}
+
+/* Knoppen of een status onder de badges */
+.game-card__actions {
+  margin-top: var(--space-3);
+}

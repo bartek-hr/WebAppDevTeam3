@@ -1,0 +1,30 @@
+/* Foto van de doos op een grijs vlak; de hoogte komt uit de prop (inline style) */
+.box-image {
+  display: block;
+  flex-shrink: 0;
+  width: 100%;
+  background-color: var(--color-surface-muted);
+}
+
+/* Hele doos zichtbaar, ook als de foto een andere verhouding heeft */
+img.box-image {
+  object-fit: contain;
+}
+
+/* Geen foto: een lichtgrijs doos-icoon in het midden */
+.box-image--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+}
+
+.box-image--placeholder .icon {
+  opacity: 0.6;
+}
+
+/* Losse afbeelding met rand en ronde hoeken, bijv. op de detailpagina van een game */
+.box-image--framed {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+}

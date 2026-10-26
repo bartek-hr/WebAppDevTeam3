@@ -1,0 +1,35 @@
+/* Detailpagina van een plank: terug-link, titel, beschrijving en games toevoegen */
+
+/* Kleine link terug, met pijltje en zonder onderstreping */
+.shelf-detail-page__back {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+}
+
+/* Naam van de plank met het label openbaar/privé ernaast (net als .shelf-card__header) */
+.shelf-detail-page__header {
+  margin-top: var(--space-2);
+}
+
+.shelf-detail-page__header > h1 {
+  margin: 0;
+}
+
+.shelf-detail-page__description {
+  margin-top: var(--space-1);
+}
+
+/* Keuzelijst en knop naast elkaar (.cluster); op smalle schermen komt de knop eronder */
+.shelf-detail-page__add {
+  margin-bottom: var(--space-3);
+}
+
+/* Groeit mee tot 32rem; min-width 0 zodat een lange titel de lijst niet te breed maakt */
+.shelf-detail-page__select {
+  flex: 1 1 16rem;
+  min-width: 0;
+  max-width: 32rem;
+}

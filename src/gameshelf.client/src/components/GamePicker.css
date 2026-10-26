@@ -1,0 +1,73 @@
+/*
+ * Zoekveld met een lijst van games eronder.
+ * De opties zijn <button>s; we zetten padding, rand, hoeken en kleuren hier zelf,
+ * anders nemen ze de stijl over van losse knopstijlen elders (bijv. "main button").
+ */
+.game-picker {
+  position: relative;
+}
+
+/* Zweeft direct onder het zoekveld, boven de rest van het formulier of dialoogvenster */
+.game-picker__list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: var(--z-dropdown);
+  max-height: 20rem;
+  margin-top: var(--space-1);
+  overflow-y: auto;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.game-picker__empty {
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.game-picker__option {
+  display: block;
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  font-size: 1rem;
+  line-height: var(--line-height);
+  color: var(--color-text);
+  text-align: start;
+  background-color: var(--color-surface);
+  border: 0;
+  border-radius: 0;
+  transition:
+    color var(--transition),
+    background-color var(--transition);
+}
+
+/* Dunne lijn tussen de opties */
+.game-picker__option + .game-picker__option {
+  border-top: 1px solid var(--color-border);
+}
+
+.game-picker__option:hover {
+  color: var(--color-text);
+  background-color: var(--color-surface-muted);
+}
+
+/* Gekozen met de pijltjestoetsen (of de eerste): blauw met witte tekst */
+.game-picker__option[aria-selected='true'],
+.game-picker__option[aria-selected='true']:hover {
+  color: var(--color-text-inverse);
+  background-color: var(--color-primary);
+}
+
+/* Titel en editie onder elkaar (spans, want een <button> mag geen <div> bevatten) */
+.game-picker__title {
+  display: block;
+  font-weight: 600;
+}
+
+.game-picker__edition {
+  display: block;
+  font-size: var(--font-size-sm);
+}

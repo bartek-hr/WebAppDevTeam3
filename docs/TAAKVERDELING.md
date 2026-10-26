@@ -28,7 +28,9 @@ beginnen in je eigen map.
   - `XxxPage.tsx` bevat de pagina's, en kleinere componenten zet je ernaast in dezelfde map.
 - **Types** staan in `src/types/index.ts` en volgen de casus. Wijzig je een type, zeg het dan,
   want de backend gaat dezelfde vorm gebruiken.
-- **UI:** alleen `react-bootstrap` en `react-bootstrap-icons`, geen losse CSS-frameworks.
+- **UI:** geen CSS-frameworks (dus ook geen Bootstrap). We schrijven zelf CSS met de gedeelde
+  classes en componenten uit [STYLING.md](STYLING.md); stijl voor één component zet je in een
+  eigen `.css`-bestand ernaast.
   Teksten in de UI zijn Nederlands, code (namen, variabelen) is Engels.
 - **Formulieren:** `react-hook-form` met een `zod`-schema voor validatie.
 - **Datums:** `date-fns` (bijv. "nog 3 dagen geldig", "te laat sinds …").

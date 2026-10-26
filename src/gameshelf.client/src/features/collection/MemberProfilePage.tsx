@@ -1,12 +1,13 @@
-import { Alert, Col, Row } from 'react-bootstrap'
-import { Gift, PencilSquare } from 'react-bootstrap-icons'
 import { Link, useParams } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
+import Alert from '../../components/Alert'
+import { EditIcon, GiftIcon } from '../../components/icons'
 import PageSpinner from '../../components/PageSpinner'
 import { useMember } from '../auth/api'
 import { useAuth } from '../auth/useAuth'
 import { useMemberShelves } from '../shelves/api'
 import ShelfCard from '../shelves/ShelfCard'
+import './MemberProfilePage.css'
 
 // Eigenaar: Joran (zie docs/TAAKVERDELING.md)
 export default function MemberProfilePage() {
@@ -23,38 +24,36 @@ export default function MemberProfilePage() {
   const owned = member.id === currentMember?.id
   return (
     <>
-      <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-        <h1 className="mb-0">{member.userName}</h1>
-        <div className="d-flex gap-2">
+      <div className="page-header">
+        <h1>{member.userName}</h1>
+        <div className="cluster">
           {owned && (
-            <Link to="/shelves" className="btn btn-outline-primary">
-              <PencilSquare className="me-1" />
+            <Link to="/shelves" className="btn btn--outline-primary">
+              <EditIcon />
               Planken beheren
             </Link>
           )}
           <Link
             to={`/wishlists?member=${encodeURIComponent(member.id)}`}
-            className="btn btn-outline-secondary"
+            className="btn btn--outline-secondary"
             aria-label={`Verlanglijst van ${member.userName}`}
           >
-            <Gift className="me-1" />
+            <GiftIcon />
             Verlanglijst
           </Link>
         </div>
       </div>
-      <h2 className="h5 text-body-secondary">Planken</h2>
+      <h2 className="member-profile-page__subheading text-muted">Planken</h2>
       {shelvesQuery.data.length === 0 && (
-        <Alert variant="light" className="border">
+        <Alert variant="neutral">
           {owned ? 'Nog geen planken.' : 'Nog geen openbare planken.'}
         </Alert>
       )}
-      <Row xs={1} md={2} lg={3} className="g-3">
+      <div className="card-grid card-grid--wide">
         {shelvesQuery.data.map((shelf) => (
-          <Col key={shelf.id}>
-            <ShelfCard shelf={shelf} />
-          </Col>
+          <ShelfCard key={shelf.id} shelf={shelf} />
         ))}
-      </Row>
+      </div>
     </>
   )
 }

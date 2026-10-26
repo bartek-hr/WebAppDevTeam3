@@ -12,6 +12,7 @@ export const STATUS_LABELS: Record<RecordStatus, string> = {
   Played: 'Gespeeld',
 }
 
+// Kleur van de statusbadge: wordt badge--secondary, badge--warning of badge--success
 export const STATUS_VARIANTS: Record<RecordStatus, string> = {
   NotPlayed: 'secondary',
   InProgress: 'warning',

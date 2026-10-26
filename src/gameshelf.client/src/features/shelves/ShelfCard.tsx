@@ -1,30 +1,28 @@
 import type { ReactNode } from 'react'
-import { Card } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import type { Shelf } from '../../types'
 import ShelfVisibility from './ShelfVisibility'
+import './ShelfCard.css'
 
 // Plank als kaart, voor "mijn planken" en het profiel van een lid
 export default function ShelfCard({ shelf, actions }: { shelf: Shelf; actions?: ReactNode }) {
   return (
-    <Card className="h-100 shadow-sm">
-      <Card.Body className="d-flex flex-column">
-        <div className="d-flex align-items-start justify-content-between gap-2">
-          <Card.Title as="h3" className="h5 mb-1">
+    <div className="card">
+      <div className="card__body">
+        <div className="shelf-card__header">
+          <h3 className="card__title shelf-card__title">
             <Link to={`/shelves/${shelf.id}`}>{shelf.name}</Link>
-          </Card.Title>
+          </h3>
           <ShelfVisibility isPublic={shelf.isPublic} />
         </div>
-        {shelf.description && (
-          <Card.Text className="small text-body-secondary">{shelf.description}</Card.Text>
-        )}
-        <div className="mt-auto d-flex align-items-center justify-content-between">
-          <span className="small text-body-secondary">
+        {shelf.description && <p className="card__text">{shelf.description}</p>}
+        <div className="card__footer shelf-card__footer">
+          <span className="text-small text-muted">
             {shelf.recordIds.length} {shelf.recordIds.length === 1 ? 'game' : 'games'}
           </span>
-          {actions && <div className="d-flex gap-1">{actions}</div>}
+          {actions && <div className="cluster cluster--tight">{actions}</div>}
         </div>
-      </Card.Body>
-    </Card>
+      </div>
+    </div>
   )
 }
