@@ -1,4 +1,3 @@
-import { Badge } from 'react-bootstrap'
 import type { Loan, LoanRequestStatus } from '../../types'
 
 interface BoxAvailabilityBadgeProps {
@@ -7,20 +6,16 @@ interface BoxAvailabilityBadgeProps {
 
 export function BoxAvailabilityBadge({ isOnLoan }: BoxAvailabilityBadgeProps) {
   return isOnLoan ? (
-    <Badge bg="secondary-subtle" text="secondary-emphasis">
-      uitgeleend
-    </Badge>
+    <span className="badge badge--secondary">uitgeleend</span>
   ) : (
-    <Badge bg="success-subtle" text="success-emphasis">
-      beschikbaar
-    </Badge>
+    <span className="badge badge--success">beschikbaar</span>
   )
 }
 
 const requestStatuses = {
-  Pending: { label: 'in afwachting', bg: 'warning-subtle', text: 'warning-emphasis' },
-  Approved: { label: 'goedgekeurd', bg: 'success-subtle', text: 'success-emphasis' },
-  Rejected: { label: 'afgewezen', bg: 'danger-subtle', text: 'danger-emphasis' },
+  Pending: { label: 'in afwachting', variant: 'warning' },
+  Approved: { label: 'goedgekeurd', variant: 'success' },
+  Rejected: { label: 'afgewezen', variant: 'danger' },
 } as const
 
 interface RequestStatusBadgeProps {
@@ -28,18 +23,14 @@ interface RequestStatusBadgeProps {
 }
 
 export function RequestStatusBadge({ status }: RequestStatusBadgeProps) {
-  const { label, bg, text } = requestStatuses[status]
-  return (
-    <Badge bg={bg} text={text}>
-      {label}
-    </Badge>
-  )
+  const { label, variant } = requestStatuses[status]
+  return <span className={`badge badge--${variant}`}>{label}</span>
 }
 
 const loanStatuses = {
-  returned: { label: 'teruggebracht', bg: 'secondary-subtle', text: 'secondary-emphasis' },
-  late: { label: 'te laat', bg: 'danger-subtle', text: 'danger-emphasis' },
-  onLoan: { label: 'uitgeleend', bg: 'primary-subtle', text: 'primary-emphasis' },
+  returned: { label: 'teruggebracht', variant: 'secondary' },
+  late: { label: 'te laat', variant: 'danger' },
+  onLoan: { label: 'uitgeleend', variant: 'primary' },
 } as const
 
 const loanStatus = (loan: Loan) => {
@@ -52,17 +43,11 @@ interface LoanStatusBadgeProps {
 }
 
 export function LoanStatusBadge({ loan }: LoanStatusBadgeProps) {
-  const { label, bg, text } = loanStatuses[loanStatus(loan)]
+  const { label, variant } = loanStatuses[loanStatus(loan)]
   return (
-    <span className="d-inline-flex flex-wrap gap-1">
-      <Badge bg={bg} text={text}>
-        {label}
-      </Badge>
-      {loan.isExtended && (
-        <Badge bg="info-subtle" text="info-emphasis">
-          verlengd
-        </Badge>
-      )}
+    <span className="cluster">
+      <span className={`badge badge--${variant}`}>{label}</span>
+      {loan.isExtended && <span className="badge badge--primary">verlengd</span>}
     </span>
   )
 }

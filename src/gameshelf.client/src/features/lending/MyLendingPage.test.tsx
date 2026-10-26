@@ -51,6 +51,23 @@ test('opent standaard de tab Mijn dozen met alleen mijn eigen dozen', async () =
   expect(screen.queryByRole('heading', { name: 'Gloomhaven' })).not.toBeInTheDocument()
 })
 
+test('tabs zijn met het toetsenbord te bedienen', async () => {
+  const user = userEvent.setup()
+  renderRoutes(routes, '/lending/mine')
+
+  const boxesTab = await screen.findByRole('tab', { name: 'Mijn dozen' })
+  boxesTab.focus()
+  await user.keyboard('{ArrowRight}')
+
+  const requestsTab = screen.getByRole('tab', { name: 'Mijn aanvragen' })
+  expect(requestsTab).toHaveFocus()
+  expect(requestsTab).toHaveAttribute('aria-selected', 'true')
+  expect(await screen.findByRole('tabpanel', { name: 'Mijn aanvragen' })).toBeInTheDocument()
+  await user.keyboard('{Home}')
+  expect(boxesTab).toHaveFocus()
+  expect(boxesTab).toHaveAttribute('aria-selected', 'true')
+})
+
 test('een onbekende tab in de URL opent Mijn dozen', async () => {
   renderRoutes(routes, '/lending/mine?tab=bestaatniet')
 
@@ -412,11 +429,11 @@ test('het bestuur ziet alle lopende leningen met de te late bovenaan', async () 
 
   for (const late of [cousin, azul]) {
     expect(within(late).getByText('te laat')).toBeInTheDocument()
-    expect(late).toHaveClass('list-group-item-danger')
+    expect(late).toHaveClass('lending-list__item--late')
   }
   for (const onTime of [gloomhaven, wingspan]) {
     expect(within(onTime).queryByText('te laat')).not.toBeInTheDocument()
-    expect(onTime).not.toHaveClass('list-group-item-danger')
+    expect(onTime).not.toHaveClass('lending-list__item--late')
   }
   expect(await within(cousin).findByText('Eigenaar: thijs')).toBeInTheDocument()
   expect(within(cousin).getByText('Geleend door: milan')).toBeInTheDocument()

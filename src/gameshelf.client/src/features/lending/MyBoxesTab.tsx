@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Alert, Button, Card, ListGroup } from 'react-bootstrap'
-import { BoxArrowRight, Check2, X } from 'react-bootstrap-icons'
+import Alert from '../../components/Alert'
+import { LogoutIcon, CheckIcon, XIcon } from '../../components/icons'
 import { Link } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
 import PageSpinner from '../../components/PageSpinner'
@@ -29,51 +29,57 @@ function IncomingRequest({ box, request, userName, canStartLoan }: IncomingReque
   const error = approve.error ?? reject.error
 
   return (
-    <ListGroup.Item as="li">
-      <div className="d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <li className="lending-list__item">
+      <div className="lending-row">
         <div>
-          <div className="fw-semibold">{userName ?? '…'}</div>
-          <div className="small text-body-secondary">
+          <div className="lending-strong">{userName ?? '…'}</div>
+          <div className="text-small text-muted">
             Aangevraagd op {formatDate(request.createdOn)}
           </div>
         </div>
         <RequestStatusBadge status={request.status} />
       </div>
       {request.status === 'Pending' && (
-        <div className="d-flex flex-wrap gap-2 mt-2">
-          <Button
-            size="sm"
-            variant="success"
+        <div className="cluster lending-space-top">
+          <button
+            type="button"
+            className="btn btn--success btn--sm"
+
             disabled={isBusy}
             onClick={() => approve.mutate(request.id)}
           >
-            <Check2 className="me-1" />
+            <CheckIcon />
             {approve.isPending ? 'Bezig met goedkeuren…' : 'Goedkeuren'}
-          </Button>
-          <Button
-            size="sm"
-            variant="outline-danger"
+          </button>
+          <button
+            type="button"
+            className="btn btn--outline-danger btn--sm"
+
             disabled={isBusy}
             onClick={() => reject.mutate(request.id)}
           >
-            <X className="me-1" />
+            <XIcon />
             {reject.isPending ? 'Bezig met afwijzen…' : 'Afwijzen'}
-          </Button>
+          </button>
         </div>
       )}
       {canStartLoan && (
         <>
-          <Button size="sm" className="mt-2" onClick={() => setIsStartingLoan(true)}>
-            <BoxArrowRight className="me-1" />
+          <button
+            type="button"
+            className="btn btn--primary btn--sm lending-space-top"
+            onClick={() => setIsStartingLoan(true)}
+          >
+            <LogoutIcon />
             Lening starten
-          </Button>
-          <div className="small text-body-secondary mt-1">
+          </button>
+          <div className="text-small text-muted lending-hint">
             Start de lening zodra je de doos op de clubavond hebt overgedragen
           </div>
         </>
       )}
       {error && (
-        <Alert variant="danger" className="small p-2 mt-2 mb-0">
+        <Alert variant="danger" className="text-small lending-space-top">
           {getErrorMessage(error)}
         </Alert>
       )}
@@ -86,7 +92,7 @@ function IncomingRequest({ box, request, userName, canStartLoan }: IncomingReque
           onClose={() => setIsStartingLoan(false)}
         />
       )}
-    </ListGroup.Item>
+    </li>
   )
 }
 
@@ -99,20 +105,20 @@ interface BoxRequestsCardProps {
 
 function BoxRequestsCard({ box, requests, loans, userNames }: BoxRequestsCardProps) {
   return (
-    <Card className="mb-3 shadow-sm">
-      <Card.Header className="d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <div className="card lending-box-card">
+      <div className="lending-box-card__header">
         <div>
-          <h2 className="h6 mb-0">
+          <h2 className="lending-box-card__title">
             <Link to={`/catalogue/${box.game.id}`}>{box.game.title}</Link>
           </h2>
-          <div className="small text-body-secondary">{formatEdition(box.game)}</div>
+          <div className="text-small text-muted">{formatEdition(box.game)}</div>
         </div>
         <BoxAvailabilityBadge isOnLoan={box.isOnLoan} />
-      </Card.Header>
+      </div>
       {requests.length === 0 ? (
-        <Card.Body className="small text-body-secondary">Nog geen aanvragen</Card.Body>
+        <div className="card__body text-small text-muted">Nog geen aanvragen</div>
       ) : (
-        <ListGroup as="ul" variant="flush">
+        <ul className="lending-list lending-list--flush">
           {requests.map((request) => (
             <IncomingRequest
               key={request.id}
@@ -124,9 +130,9 @@ function BoxRequestsCard({ box, requests, loans, userNames }: BoxRequestsCardPro
               }
             />
           ))}
-        </ListGroup>
+        </ul>
       )}
-    </Card>
+    </div>
   )
 }
 
@@ -154,7 +160,7 @@ export default function MyBoxesTab() {
 
   if (myBoxes.length === 0) {
     return (
-      <Alert variant="light" className="border">
+      <Alert variant="neutral">
         Je biedt nog geen dozen aan. <Link to="/lending">Naar de uitleenlijst</Link>
       </Alert>
     )
