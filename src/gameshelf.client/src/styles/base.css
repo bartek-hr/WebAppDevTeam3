@@ -1,0 +1,159 @@
+/* Basisstijlen voor HTML-elementen zelf (zonder classes) */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  line-height: var(--line-height);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Koppen: groter op brede schermen, maar nooit groter dan de maximale maat */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0 0 var(--space-2);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-heading);
+}
+
+h1 {
+  font-size: clamp(1.75rem, 1.375rem + 1.5vw, 2.5rem);
+}
+
+h2 {
+  font-size: clamp(1.5rem, 1.325rem + 0.9vw, 2rem);
+}
+
+h3 {
+  font-size: clamp(1.375rem, 1.3rem + 0.6vw, 1.75rem);
+}
+
+h4 {
+  font-size: 1.5rem;
+}
+
+h5 {
+  font-size: 1.25rem;
+}
+
+h6 {
+  font-size: 1rem;
+}
+
+p,
+ul,
+ol,
+dl {
+  margin: 0 0 var(--space-3);
+}
+
+ul,
+ol {
+  padding-left: 2rem;
+}
+
+dt {
+  font-weight: 700;
+}
+
+dd {
+  margin: 0 0 var(--space-2);
+}
+
+strong,
+b {
+  font-weight: 700;
+}
+
+small {
+  font-size: 0.875em;
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+img,
+svg {
+  vertical-align: middle;
+}
+
+img {
+  max-width: 100%;
+}
+
+table {
+  border-collapse: collapse;
+  caption-side: bottom;
+}
+
+th {
+  text-align: start;
+}
+
+hr {
+  margin: var(--space-3) 0;
+  border: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+label {
+  display: inline-block;
+}
+
+button,
+input,
+select,
+textarea {
+  margin: 0;
+  font: inherit;
+  line-height: inherit;
+}
+
+button:not(:disabled) {
+  cursor: pointer;
+}
+
+/* Zichtbare focus voor toetsenbordgebruikers; componenten kunnen dit verfijnen */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* Minder beweging als de gebruiker dat in het besturingssysteem heeft aangezet */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

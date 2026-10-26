@@ -1,9 +1,10 @@
 import { useState } from 'react'
-import { Alert, Button, Col, Modal, Row } from 'react-bootstrap'
-import { PencilSquare, PlusLg, Trash } from 'react-bootstrap-icons'
 import { getErrorMessage } from '../../api/errors'
+import Alert from '../../components/Alert'
 import IconButton from '../../components/IconButton'
+import Modal from '../../components/Modal'
 import PageSpinner from '../../components/PageSpinner'
+import { EditIcon, PlusIcon, TrashIcon } from '../../components/icons'
 import type { Shelf } from '../../types'
 import { useDeleteShelf, useMyShelves } from './api'
 import ShelfCard from './ShelfCard'
@@ -17,50 +18,45 @@ export default function ShelvesPage() {
   const [removing, setRemoving] = useState<Shelf | null>(null)
   return (
     <>
-      <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
-        <h1 className="mb-0">Mijn planken</h1>
-        <Button onClick={() => setEditing('new')}>
-          <PlusLg className="me-1" />
+      <div className="page-header">
+        <h1>Mijn planken</h1>
+        <button type="button" className="btn btn--primary" onClick={() => setEditing('new')}>
+          <PlusIcon />
           Plank aanmaken
-        </Button>
+        </button>
       </div>
       {query.isLoading && <PageSpinner />}
       {query.isError && <Alert variant="danger">{getErrorMessage(query.error)}</Alert>}
-      {query.data?.length === 0 && (
-        <Alert variant="light" className="border">
-          Je hebt nog geen planken.
-        </Alert>
-      )}
-      <Row xs={1} md={2} lg={3} className="g-3">
+      {query.data?.length === 0 && <Alert variant="neutral">Je hebt nog geen planken.</Alert>}
+      <div className="card-grid card-grid--wide">
         {query.data?.map((shelf) => (
-          <Col key={shelf.id}>
-            <ShelfCard
-              shelf={shelf}
-              actions={
-                <>
-                  <IconButton
-                    variant="outline-primary"
-                    icon={<PencilSquare />}
-                    tooltip="Bewerken"
-                    label={`Bewerk ${shelf.name}`}
-                    onClick={() => setEditing(shelf)}
-                  />
-                  <IconButton
-                    variant="outline-danger"
-                    icon={<Trash />}
-                    tooltip="Verwijderen"
-                    label={`Verwijder ${shelf.name}`}
-                    onClick={() => {
-                      remove.reset()
-                      setRemoving(shelf)
-                    }}
-                  />
-                </>
-              }
-            />
-          </Col>
+          <ShelfCard
+            key={shelf.id}
+            shelf={shelf}
+            actions={
+              <>
+                <IconButton
+                  variant="outline-primary"
+                  icon={<EditIcon />}
+                  tooltip="Bewerken"
+                  label={`Bewerk ${shelf.name}`}
+                  onClick={() => setEditing(shelf)}
+                />
+                <IconButton
+                  variant="outline-danger"
+                  icon={<TrashIcon />}
+                  tooltip="Verwijderen"
+                  label={`Verwijder ${shelf.name}`}
+                  onClick={() => {
+                    remove.reset()
+                    setRemoving(shelf)
+                  }}
+                />
+              </>
+            }
+          />
         ))}
-      </Row>
+      </div>
       {editing && (
         <ShelfFormModal
           shelf={editing === 'new' ? undefined : editing}
@@ -68,24 +64,23 @@ export default function ShelvesPage() {
         />
       )}
       {removing && (
-        <Modal show onHide={() => setRemoving(null)} aria-labelledby="delete-shelf-title">
-          <Modal.Header closeButton>
-            <Modal.Title id="delete-shelf-title">Plank verwijderen</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
+        <Modal title="Plank verwijderen" onClose={() => setRemoving(null)}>
+          <div className="modal__body">
             <p>{removing.name} verwijderen? De games blijven in je collectie.</p>
             {remove.isError && <Alert variant="danger">{getErrorMessage(remove.error)}</Alert>}
-          </Modal.Body>
-          <Modal.Footer>
-            <Button
-              variant="secondary"
+          </div>
+          <div className="modal__footer">
+            <button
+              type="button"
+              className="btn btn--secondary"
               disabled={remove.isPending}
               onClick={() => setRemoving(null)}
             >
               Annuleren
-            </Button>
-            <Button
-              variant="danger"
+            </button>
+            <button
+              type="button"
+              className="btn btn--danger"
               disabled={remove.isPending}
               onClick={async () => {
                 try {
@@ -97,8 +92,8 @@ export default function ShelvesPage() {
               }}
             >
               Verwijderen
-            </Button>
-          </Modal.Footer>
+            </button>
+          </div>
         </Modal>
       )}
     </>

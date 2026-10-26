@@ -1,0 +1,26 @@
+/* Detailpagina van een game in de catalogus */
+
+/* Link terug naar de catalogus onder de foutmelding */
+.game-detail-page__back {
+  margin-top: var(--space-2);
+}
+
+.game-detail-page__title {
+  margin-bottom: var(--space-1);
+}
+
+/* Editie (uitgever en jaar) iets groter en lichter onder de titel */
+.game-detail-page__edition {
+  font-size: var(--font-size-lg);
+  font-weight: 300;
+  color: var(--color-text-muted);
+}
+
+/* Kleine kop boven de lijst met andere edities */
+.game-detail-page__subheading {
+  font-size: 1rem;
+}
+
+.game-detail-page__editions {
+  margin-bottom: 0;
+}

@@ -1,0 +1,166 @@
+/* Paginalayout: container, paginakop, rasters en formulierrijen */
+
+/* Inhoud gecentreerd met een maximale breedte */
+.container {
+  width: 100%;
+  max-width: var(--container-width);
+  margin-inline: auto;
+  padding-inline: var(--space-3);
+}
+
+/* Ruimte onder de inhoud van elke pagina */
+.page-content {
+  padding-bottom: var(--space-5);
+}
+
+/* Smalle pagina, bijv. een formulier */
+.page-narrow {
+  max-width: 47.5rem;
+  margin-inline: auto;
+}
+
+/* Paginatitel met knoppen ernaast; op smalle schermen komen de knoppen eronder */
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.page-header > :is(h1, h2) {
+  margin: 0;
+}
+
+/* Elementen naast elkaar met ruimte ertussen, lopen door op een nieuwe regel */
+.cluster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.cluster--tight {
+  gap: var(--space-1);
+}
+
+/* Raster van kaarten: 1 kolom op telefoons, tot 4 kolommen op brede schermen */
+.card-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+@media (min-width: 576px) {
+  .card-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .card-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 992px) {
+  .card-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+/* Bredere kaarten (bijv. planken): 1, 2 of 3 kolommen */
+@media (min-width: 576px) {
+  .card-grid--wide {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (min-width: 768px) {
+  .card-grid--wide {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 992px) {
+  .card-grid--wide {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/*
+ * Zoek- en filterbalk boven een lijst. Telefoon: alles onder elkaar. Vanaf 576px: zoekveld
+ * bovenaan, filters naast elkaar eronder. Vanaf 768px: één rij, zoekveld twee keer zo breed.
+ */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.filter-bar > * {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+@media (min-width: 576px) {
+  .filter-bar > * {
+    flex: 1 1 0;
+  }
+
+  .filter-bar > .filter-bar__search {
+    flex-basis: 100%;
+  }
+}
+
+@media (min-width: 768px) {
+  .filter-bar > .filter-bar__search {
+    flex: 2 1 0;
+  }
+}
+
+/* Velden naast elkaar in een formulier: breed + smal (2 : 1) vanaf 576px */
+.field-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: var(--space-3);
+}
+
+@media (min-width: 576px) {
+  .field-row {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  }
+}
+
+/* Twee even brede velden, ook op telefoons (staat na de media query, dus wint) */
+.field-row--equal {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+/* Detailpagina: afbeelding links (1/3), gegevens rechts (2/3) */
+.detail-layout {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .detail-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    align-items: start;
+  }
+}
+
+/* Lijst met kenmerken (<dl>): naam en waarde naast elkaar vanaf 576px */
+.details-list {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  column-gap: var(--space-4);
+}
+
+@media (min-width: 576px) {
+  .details-list {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+  }
+}

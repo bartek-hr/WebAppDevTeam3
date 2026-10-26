@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
-import { Alert, Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import { Link, Navigate } from 'react-router-dom'
 import { z } from 'zod'
 import { getErrorMessage } from '../../api/errors'
+import Alert from '../../components/Alert'
 import PageSpinner from '../../components/PageSpinner'
 import AuthCard from './AuthCard'
 import { useAuth } from './useAuth'
@@ -59,53 +59,87 @@ export default function RegisterPage() {
       }
     >
       {serverError && <Alert variant="danger">{serverError}</Alert>}
-      <Form noValidate onSubmit={handleSubmit(onSubmit)}>
-        <Form.Group className="mb-3" controlId="userName">
-          <Form.Label>Gebruikersnaam</Form.Label>
-          <Form.Control
+      <form noValidate onSubmit={handleSubmit(onSubmit)}>
+        <div className="field">
+          <label htmlFor="userName" className="field__label">
+            Gebruikersnaam
+          </label>
+          <input
+            id="userName"
+            className="input"
             autoComplete="username"
             autoFocus
-            isInvalid={!!errors.userName}
+            aria-invalid={!!errors.userName}
+            aria-describedby={errors.userName ? 'userName-error' : undefined}
             {...register('userName')}
           />
-          <Form.Control.Feedback type="invalid">{errors.userName?.message}</Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="email">
-          <Form.Label>E-mailadres</Form.Label>
-          <Form.Control
+          {errors.userName && (
+            <div id="userName-error" className="field__error">
+              {errors.userName.message}
+            </div>
+          )}
+        </div>
+        <div className="field">
+          <label htmlFor="email" className="field__label">
+            E-mailadres
+          </label>
+          <input
+            id="email"
+            className="input"
             type="email"
             autoComplete="email"
-            isInvalid={!!errors.email}
+            aria-invalid={!!errors.email}
+            aria-describedby={errors.email ? 'email-error' : undefined}
             {...register('email')}
           />
-          <Form.Control.Feedback type="invalid">{errors.email?.message}</Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="password">
-          <Form.Label>Wachtwoord</Form.Label>
-          <Form.Control
+          {errors.email && (
+            <div id="email-error" className="field__error">
+              {errors.email.message}
+            </div>
+          )}
+        </div>
+        <div className="field">
+          <label htmlFor="password" className="field__label">
+            Wachtwoord
+          </label>
+          <input
+            id="password"
+            className="input"
             type="password"
             autoComplete="new-password"
-            isInvalid={!!errors.password}
+            aria-invalid={!!errors.password}
+            aria-describedby={errors.password ? 'password-error' : undefined}
             {...register('password')}
           />
-          <Form.Control.Feedback type="invalid">{errors.password?.message}</Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="confirmPassword">
-          <Form.Label>Wachtwoord herhalen</Form.Label>
-          <Form.Control
+          {errors.password && (
+            <div id="password-error" className="field__error">
+              {errors.password.message}
+            </div>
+          )}
+        </div>
+        <div className="field">
+          <label htmlFor="confirmPassword" className="field__label">
+            Wachtwoord herhalen
+          </label>
+          <input
+            id="confirmPassword"
+            className="input"
             type="password"
             autoComplete="new-password"
-            isInvalid={!!errors.confirmPassword}
+            aria-invalid={!!errors.confirmPassword}
+            aria-describedby={errors.confirmPassword ? 'confirmPassword-error' : undefined}
             {...register('confirmPassword')}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.confirmPassword?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Button type="submit" className="w-100" disabled={isSubmitting}>
+          {errors.confirmPassword && (
+            <div id="confirmPassword-error" className="field__error">
+              {errors.confirmPassword.message}
+            </div>
+          )}
+        </div>
+        <button type="submit" className="btn btn--primary btn--block" disabled={isSubmitting}>
           {isSubmitting ? 'Bezig…' : 'Account aanmaken'}
-        </Button>
-      </Form>
+        </button>
+      </form>
     </AuthCard>
   )
 }

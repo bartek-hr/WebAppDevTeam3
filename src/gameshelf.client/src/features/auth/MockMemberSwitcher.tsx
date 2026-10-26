@@ -1,4 +1,3 @@
-import { NavDropdown } from 'react-bootstrap'
 import { useMembers } from './api'
 import { useAuth } from './useAuth'
 
@@ -9,18 +8,19 @@ export default function MockMemberSwitcher() {
 
   return (
     <>
-      <NavDropdown.Divider />
-      <NavDropdown.Header>Wissel van lid (mock)</NavDropdown.Header>
+      <hr className="nav-menu__divider" />
+      <div className="nav-menu__header">Wissel van lid (mock)</div>
       {members.map((m) => (
-        <NavDropdown.Item
+        <button
           key={m.id}
-          as="button"
-          active={m.id === member?.id}
+          type="button"
+          className="nav-menu__item"
+          aria-current={m.id === member?.id ? 'true' : undefined}
           onClick={() => login({ userNameOrEmail: m.userName, password: 'mock' })}
         >
           {m.userName}
           {m.isCommittee && ' (bestuur)'}
-        </NavDropdown.Item>
+        </button>
       ))}
     </>
   )

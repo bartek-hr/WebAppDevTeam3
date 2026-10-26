@@ -1,0 +1,5 @@
+/* Melding midden op de pagina met ruimte erboven en eronder */
+.not-found-page {
+  padding-block: var(--space-5);
+  text-align: center;
+}

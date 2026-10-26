@@ -1,7 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Alert, Button, Form, Modal } from 'react-bootstrap'
 import { useForm, useWatch } from 'react-hook-form'
 import { getErrorMessage } from '../../api/errors'
+import Alert from '../../components/Alert'
+import Modal from '../../components/Modal'
 import type { CollectionRecord } from '../../types'
 import { useUpdateCollectionRecord } from './api'
 import { MAX_IN_PROGRESS, MAX_RATING, STATUSES, STATUS_LABELS } from './collectionRules'
@@ -35,11 +36,8 @@ export default function EditCollectionModal({
   const atLimit =
     records.filter((r) => r.id !== record.id && r.status === 'InProgress').length >= MAX_IN_PROGRESS
   return (
-    <Modal show onHide={onClose} aria-labelledby="edit-record-title">
-      <Modal.Header closeButton>
-        <Modal.Title id="edit-record-title">{record.game.title} bewerken</Modal.Title>
-      </Modal.Header>
-      <Form
+    <Modal title={`${record.game.title} bewerken`} onClose={onClose}>
+      <form
         noValidate
         onSubmit={handleSubmit(async (values) => {
           try {
@@ -54,24 +52,36 @@ export default function EditCollectionModal({
           }
         })}
       >
-        <Modal.Body>
+        <div className="modal__body">
           {update.isError && <Alert variant="danger">{getErrorMessage(update.error)}</Alert>}
-          <Form.Group controlId="record-status" className="mb-3">
-            <Form.Label>Status</Form.Label>
-            <Form.Select {...register('status')} disabled={update.isPending}>
+          <div className="field">
+            <label htmlFor="record-status" className="field__label">
+              Status
+            </label>
+            <select
+              id="record-status"
+              className="input"
+              {...register('status')}
+              disabled={update.isPending}
+            >
               {STATUSES.map((s) => (
                 <option key={s} value={s} disabled={s === 'InProgress' && atLimit}>
                   {STATUS_LABELS[s]}
                 </option>
               ))}
-            </Form.Select>
-            {atLimit && <Form.Text>Maak eerst een campagne af.</Form.Text>}
-          </Form.Group>
-          <Form.Group controlId="record-rating" className="mb-3">
-            <Form.Label>Beoordeling</Form.Label>
-            <Form.Select
+            </select>
+            {atLimit && <small className="field__hint">Maak eerst een campagne af.</small>}
+          </div>
+          <div className="field">
+            <label htmlFor="record-rating" className="field__label">
+              Beoordeling
+            </label>
+            <select
+              id="record-rating"
+              className="input"
               disabled={status !== 'Played' || update.isPending}
-              isInvalid={!!errors.rating}
+              aria-invalid={!!errors.rating}
+              aria-describedby={errors.rating ? 'record-rating-error' : undefined}
               {...register('rating', { setValueAs: (v) => (v === '' ? undefined : Number(v)) })}
             >
               <option value="">Geen beoordeling</option>
@@ -80,31 +90,50 @@ export default function EditCollectionModal({
                   {i + 1} sterren
                 </option>
               ))}
-            </Form.Select>
-            <Form.Control.Feedback type="invalid">{errors.rating?.message}</Form.Control.Feedback>
-            {status !== 'Played' && <Form.Text>Eerst spelen, dan beoordelen.</Form.Text>}
-          </Form.Group>
-          <Form.Group controlId="record-note">
-            <Form.Label>Notitie</Form.Label>
-            <Form.Control
-              as="textarea"
+            </select>
+            {errors.rating && (
+              <div id="record-rating-error" className="field__error">
+                {errors.rating.message}
+              </div>
+            )}
+            {status !== 'Played' && (
+              <small className="field__hint">Eerst spelen, dan beoordelen.</small>
+            )}
+          </div>
+          <div className="field">
+            <label htmlFor="record-note" className="field__label">
+              Notitie
+            </label>
+            <textarea
+              id="record-note"
+              className="input"
               rows={3}
-              isInvalid={!!errors.note}
+              aria-invalid={!!errors.note}
+              aria-describedby={errors.note ? 'record-note-error' : undefined}
               {...register('note')}
               disabled={update.isPending}
             />
-            <Form.Control.Feedback type="invalid">{errors.note?.message}</Form.Control.Feedback>
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" disabled={update.isPending} onClick={onClose}>
+            {errors.note && (
+              <div id="record-note-error" className="field__error">
+                {errors.note.message}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="modal__footer">
+          <button
+            type="button"
+            className="btn btn--secondary"
+            disabled={update.isPending}
+            onClick={onClose}
+          >
             Annuleren
-          </Button>
-          <Button type="submit" disabled={update.isPending}>
+          </button>
+          <button type="submit" className="btn btn--primary" disabled={update.isPending}>
             Opslaan
-          </Button>
-        </Modal.Footer>
-      </Form>
+          </button>
+        </div>
+      </form>
     </Modal>
   )
 }

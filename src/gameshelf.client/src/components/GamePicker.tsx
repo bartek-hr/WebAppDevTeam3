@@ -1,9 +1,9 @@
 import { useId, useState, type KeyboardEvent } from 'react'
-import { Button, Form, InputGroup, ListGroup } from 'react-bootstrap'
 import { Link } from 'react-router-dom'
 import { useGames } from '../features/catalogue/api'
 import type { Game } from '../types'
 import { formatEdition } from '../utils/format'
+import './GamePicker.css'
 
 interface GamePickerProps {
   value?: number | null
@@ -58,14 +58,18 @@ export default function GamePicker({
   const generatedId = useId()
   const inputId = id ?? generatedId
   const listId = `${inputId}-options`
+  const errorId = `${inputId}-error`
 
-  if (isLoading) return <Form.Control id={inputId} disabled placeholder="Games laden…" />
+  if (isLoading) {
+    return <input id={inputId} className="input" disabled placeholder="Games laden…" />
+  }
   if (isError || !games) {
     return (
-      <Form.Control
+      <input
         id={inputId}
+        className="input"
         disabled
-        isInvalid
+        aria-invalid
         placeholder="Games konden niet geladen worden"
       />
     )
@@ -75,16 +79,19 @@ export default function GamePicker({
   if (selected) {
     return (
       <>
-        <InputGroup hasValidation>
-          <Form.Control
+        <div className="input-group">
+          <input
             id={inputId}
+            className="input"
             readOnly
             value={`${selected.title} (${formatEdition(selected)})`}
-            isInvalid={!!error}
+            aria-invalid={!!error}
+            aria-describedby={error ? errorId : undefined}
             disabled={disabled}
           />
-          <Button
-            variant="outline-secondary"
+          <button
+            type="button"
+            className="btn btn--outline-secondary"
             disabled={disabled}
             onClick={() => {
               onChange(null)
@@ -92,9 +99,13 @@ export default function GamePicker({
             }}
           >
             Wijzigen
-          </Button>
-        </InputGroup>
-        {error && <div className="invalid-feedback d-block">{error}</div>}
+          </button>
+        </div>
+        {error && (
+          <div id={errorId} className="field__error">
+            {error}
+          </div>
+        )}
       </>
     )
   }
@@ -136,20 +147,24 @@ export default function GamePicker({
   }
 
   return (
-    <div className="position-relative">
-      <Form.Control
+    // Eigen key: na "Wijzigen" komt er een nieuw zoekveld (React hergebruikt anders de <div>
+    // en <input> van de gekozen game), zodat autoFocus werkt
+    <div key="search" className="game-picker">
+      <input
         id={inputId}
+        className="input"
         type="search"
         role="combobox"
         aria-expanded={isOpen}
         aria-controls={listId}
         aria-autocomplete="list"
         aria-activedescendant={isOpen && activeGame ? `${listId}-${activeGame.id}` : undefined}
+        aria-invalid={!!error}
+        aria-describedby={error ? errorId : undefined}
         autoComplete="off"
         autoFocus={focusSearch}
         placeholder={placeholder}
         value={query}
-        isInvalid={!!error}
         disabled={disabled}
         onChange={(event) => {
           setQuery(event.target.value)
@@ -164,43 +179,42 @@ export default function GamePicker({
         onKeyDown={handleKeyDown}
       />
       {isOpen && (
-        <ListGroup
-          id={listId}
-          role="listbox"
-          className="position-absolute w-100 mt-1 shadow"
-          style={{ zIndex: 1050, maxHeight: 320, overflowY: 'auto' }}
-        >
+        // Lijst en opties zijn geen tabstop: de focus blijft in het zoekveld (kiezen gaat met
+        // de pijltjes). Anders springt Tab naar de lijst, die dan meteen verdwijnt, en raak je
+        // de focus kwijt.
+        <div id={listId} role="listbox" className="game-picker__list" tabIndex={-1}>
           {results.length === 0 ? (
-            <ListGroup.Item className="small text-body-secondary">
-              Geen games gevonden
-            </ListGroup.Item>
+            <div className="game-picker__empty">Geen games gevonden</div>
           ) : (
             results.map((game) => (
-              <ListGroup.Item
+              <button
                 key={game.id}
                 id={`${listId}-${game.id}`}
-                as="button"
                 type="button"
                 role="option"
-                action
-                active={game === activeGame}
+                className="game-picker__option"
                 aria-selected={game === activeGame}
+                tabIndex={-1}
                 // Voorkomt dat het zoekveld de focus (en de lijst) verliest vóór de klik
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => select(game)}
               >
-                <div className="fw-semibold">{game.title}</div>
-                <div className="small">{formatEdition(game)}</div>
-              </ListGroup.Item>
+                <span className="game-picker__title">{game.title}</span>{' '}
+                <span className="game-picker__edition">{formatEdition(game)}</span>
+              </button>
             ))
           )}
-        </ListGroup>
+        </div>
       )}
-      {error && <div className="invalid-feedback d-block">{error}</div>}
-      <Form.Text>
+      {error && (
+        <div id={errorId} className="field__error">
+          {error}
+        </div>
+      )}
+      <small className="field__hint">
         Staat de game er niet tussen? <Link to="/catalogue/new">Voeg hem toe aan de catalogus</Link>
         .
-      </Form.Text>
+      </small>
     </div>
   )
 }

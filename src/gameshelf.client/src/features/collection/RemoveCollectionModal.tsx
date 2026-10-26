@@ -1,5 +1,6 @@
-import { Alert, Button, Modal } from 'react-bootstrap'
 import { getErrorMessage } from '../../api/errors'
+import Alert from '../../components/Alert'
+import Modal from '../../components/Modal'
 import type { CollectionRecord } from '../../types'
 import { useRecordShelves, useRemoveFromCollection } from './api'
 
@@ -13,11 +14,8 @@ export default function RemoveCollectionModal({
   const shelves = useRecordShelves(record.id)
   const remove = useRemoveFromCollection()
   return (
-    <Modal show onHide={onClose} aria-labelledby="remove-collection-title">
-      <Modal.Header closeButton>
-        <Modal.Title id="remove-collection-title">Game verwijderen</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
+    <Modal title="Game verwijderen" onClose={onClose}>
+      <div className="modal__body">
         <p>Wil je {record.game.title} uit je collectie verwijderen?</p>
         {shelves.isLoading && <p>Planken laden…</p>}
         {shelves.isError && <Alert variant="danger">{getErrorMessage(shelves.error)}</Alert>}
@@ -29,13 +27,19 @@ export default function RemoveCollectionModal({
           </p>
         )}
         {remove.isError && <Alert variant="danger">{getErrorMessage(remove.error)}</Alert>}
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="secondary" onClick={onClose} disabled={remove.isPending}>
+      </div>
+      <div className="modal__footer">
+        <button
+          type="button"
+          className="btn btn--secondary"
+          onClick={onClose}
+          disabled={remove.isPending}
+        >
           Annuleren
-        </Button>
-        <Button
-          variant="danger"
+        </button>
+        <button
+          type="button"
+          className="btn btn--danger"
           disabled={!shelves.data || remove.isPending}
           onClick={async () => {
             try {
@@ -47,8 +51,8 @@ export default function RemoveCollectionModal({
           }}
         >
           Verwijderen
-        </Button>
-      </Modal.Footer>
+        </button>
+      </div>
     </Modal>
   )
 }

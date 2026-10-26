@@ -1,10 +1,10 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
-import { Alert, Button, Form } from 'react-bootstrap'
 import { useForm } from 'react-hook-form'
 import { Link, Navigate, useLocation, type Location } from 'react-router-dom'
 import { z } from 'zod'
 import { getErrorMessage } from '../../api/errors'
+import Alert from '../../components/Alert'
 import PageSpinner from '../../components/PageSpinner'
 import AuthCard from './AuthCard'
 import MockLoginHint from './MockLoginHint'
@@ -55,33 +55,49 @@ export default function LoginPage() {
       }
     >
       {serverError && <Alert variant="danger">{serverError}</Alert>}
-      <Form noValidate onSubmit={handleSubmit(onSubmit)}>
-        <Form.Group className="mb-3" controlId="userNameOrEmail">
-          <Form.Label>Gebruikersnaam of e-mailadres</Form.Label>
-          <Form.Control
+      <form noValidate onSubmit={handleSubmit(onSubmit)}>
+        <div className="field">
+          <label htmlFor="userNameOrEmail" className="field__label">
+            Gebruikersnaam of e-mailadres
+          </label>
+          <input
+            id="userNameOrEmail"
+            className="input"
             autoComplete="username"
             autoFocus
-            isInvalid={!!errors.userNameOrEmail}
+            aria-invalid={!!errors.userNameOrEmail}
+            aria-describedby={errors.userNameOrEmail ? 'userNameOrEmail-error' : undefined}
             {...register('userNameOrEmail')}
           />
-          <Form.Control.Feedback type="invalid">
-            {errors.userNameOrEmail?.message}
-          </Form.Control.Feedback>
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="password">
-          <Form.Label>Wachtwoord</Form.Label>
-          <Form.Control
+          {errors.userNameOrEmail && (
+            <div id="userNameOrEmail-error" className="field__error">
+              {errors.userNameOrEmail.message}
+            </div>
+          )}
+        </div>
+        <div className="field">
+          <label htmlFor="password" className="field__label">
+            Wachtwoord
+          </label>
+          <input
+            id="password"
+            className="input"
             type="password"
             autoComplete="current-password"
-            isInvalid={!!errors.password}
+            aria-invalid={!!errors.password}
+            aria-describedby={errors.password ? 'password-error' : undefined}
             {...register('password')}
           />
-          <Form.Control.Feedback type="invalid">{errors.password?.message}</Form.Control.Feedback>
-        </Form.Group>
-        <Button type="submit" className="w-100" disabled={isSubmitting}>
+          {errors.password && (
+            <div id="password-error" className="field__error">
+              {errors.password.message}
+            </div>
+          )}
+        </div>
+        <button type="submit" className="btn btn--primary btn--block" disabled={isSubmitting}>
           {isSubmitting ? 'Bezig met inloggen…' : 'Inloggen'}
-        </Button>
-      </Form>
+        </button>
+      </form>
       {useMocks && <MockLoginHint />}
     </AuthCard>
   )

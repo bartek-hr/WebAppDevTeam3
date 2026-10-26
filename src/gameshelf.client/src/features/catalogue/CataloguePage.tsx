@@ -1,8 +1,8 @@
-import { Alert, Button, Col, Form, Row } from 'react-bootstrap'
-import { PlusLg } from 'react-bootstrap-icons'
 import { Link, useSearchParams } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
+import Alert from '../../components/Alert'
 import GameCard from '../../components/GameCard'
+import { PlusIcon } from '../../components/icons'
 import PageSpinner from '../../components/PageSpinner'
 import { useGames } from './api'
 
@@ -44,57 +44,54 @@ export default function CataloguePage() {
 
   return (
     <>
-      <div className="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-        <h1 className="mb-0">Catalogus</h1>
-        <Link to="/catalogue/new" className="btn btn-primary">
-          <PlusLg className="me-1" />
+      <div className="page-header">
+        <h1>Catalogus</h1>
+        <Link to="/catalogue/new" className="btn btn--primary">
+          <PlusIcon />
           Game toevoegen
         </Link>
       </div>
-      <p className="text-body-secondary">
+      <p className="text-muted">
         Elke editie is een eigen game: de Nederlandse en de Engelse doos van dezelfde titel staan
         hier apart.
       </p>
 
-      <Form role="search" className="row g-2 mb-3" onSubmit={(event) => event.preventDefault()}>
-        <Col md={6}>
-          <Form.Control
-            type="search"
-            placeholder="Zoek op titel of uitgever"
-            aria-label="Zoek op titel of uitgever"
-            value={query}
-            onChange={(event) => setFilter('q', event.target.value)}
-          />
-        </Col>
-        <Col sm={6} md={3}>
-          <Form.Select
-            aria-label="Categorie"
-            value={category}
-            onChange={(event) => setFilter('category', event.target.value)}
-          >
-            <option value="">Alle categorieën</option>
-            {categories.map((name) => (
-              <option key={name} value={name}>
-                {name}
-              </option>
-            ))}
-          </Form.Select>
-        </Col>
-        <Col sm={6} md={3}>
-          <Form.Select
-            aria-label="Aantal spelers"
-            value={players || ''}
-            onChange={(event) => setFilter('players', event.target.value)}
-          >
-            <option value="">Elk aantal spelers</option>
-            {PLAYER_COUNTS.map((count) => (
-              <option key={count} value={count}>
-                Geschikt voor {count} {count === 1 ? 'speler' : 'spelers'}
-              </option>
-            ))}
-          </Form.Select>
-        </Col>
-      </Form>
+      <form role="search" className="filter-bar" onSubmit={(event) => event.preventDefault()}>
+        <input
+          type="search"
+          className="input filter-bar__search"
+          placeholder="Zoek op titel of uitgever"
+          aria-label="Zoek op titel of uitgever"
+          value={query}
+          onChange={(event) => setFilter('q', event.target.value)}
+        />
+        <select
+          className="input"
+          aria-label="Categorie"
+          value={category}
+          onChange={(event) => setFilter('category', event.target.value)}
+        >
+          <option value="">Alle categorieën</option>
+          {categories.map((name) => (
+            <option key={name} value={name}>
+              {name}
+            </option>
+          ))}
+        </select>
+        <select
+          className="input"
+          aria-label="Aantal spelers"
+          value={players || ''}
+          onChange={(event) => setFilter('players', event.target.value)}
+        >
+          <option value="">Elk aantal spelers</option>
+          {PLAYER_COUNTS.map((count) => (
+            <option key={count} value={count}>
+              Geschikt voor {count} {count === 1 ? 'speler' : 'spelers'}
+            </option>
+          ))}
+        </select>
+      </form>
 
       {isLoading && <PageSpinner />}
       {isError && (
@@ -104,28 +101,26 @@ export default function CataloguePage() {
       )}
       {games && (
         <>
-          <p className="small text-body-secondary">
+          <p className="text-small text-muted">
             {filtered.length} van {games.length} games
           </p>
           {filtered.length === 0 ? (
-            <Alert variant="light" className="border">
+            <Alert variant="neutral">
               Geen games gevonden met deze filters.{' '}
-              <Button
-                variant="link"
-                className="p-0 align-baseline"
+              <button
+                type="button"
+                className="btn btn--link"
                 onClick={() => setSearchParams({}, { replace: true })}
               >
                 Filters wissen
-              </Button>
+              </button>
             </Alert>
           ) : (
-            <Row xs={1} sm={2} md={3} lg={4} className="g-3">
+            <div className="card-grid">
               {filtered.map((game) => (
-                <Col key={game.id}>
-                  <GameCard game={game} to={`/catalogue/${game.id}`} />
-                </Col>
+                <GameCard key={game.id} game={game} to={`/catalogue/${game.id}`} />
               ))}
-            </Row>
+            </div>
           )}
         </>
       )}

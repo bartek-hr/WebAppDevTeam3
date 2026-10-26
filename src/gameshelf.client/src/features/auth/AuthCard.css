@@ -1,0 +1,32 @@
+/* Smalle, gecentreerde pagina voor inloggen en registreren */
+.auth-card {
+  width: 100%;
+  max-width: 27.5rem;
+  margin-inline: auto;
+  padding: var(--space-5) var(--space-3);
+}
+
+/* Naam van de app boven de kaart (geen kop, de paginatitel staat in de kaart) */
+.auth-card__brand {
+  margin-bottom: var(--space-4);
+  /* Even groot als een h3 (zie base.css): kleiner op telefoons */
+  font-size: clamp(1.375rem, 1.3rem + 0.6vw, 1.75rem);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--color-heading);
+  text-align: center;
+}
+
+.auth-card__body {
+  padding: var(--space-4);
+}
+
+.auth-card__title {
+  margin-bottom: var(--space-3);
+  font-size: var(--font-size-lg);
+}
+
+.auth-card__footer {
+  margin-top: var(--space-3);
+  text-align: center;
+}

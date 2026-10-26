@@ -1,0 +1,6 @@
+/* Profielpagina van een lid */
+
+/* Kopje "Planken": kleiner dan een gewone h2, de kleur komt van .text-muted */
+.member-profile-page__subheading {
+  font-size: var(--font-size-lg);
+}
