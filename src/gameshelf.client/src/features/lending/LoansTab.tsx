@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Alert, Button, ListGroup } from 'react-bootstrap'
-import { CalendarPlus } from 'react-bootstrap-icons'
+import Alert from '../../components/Alert'
+import { CalendarPlusIcon } from '../../components/icons'
 import { Link } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
 import PageSpinner from '../../components/PageSpinner'
@@ -26,17 +26,17 @@ function ExtendLoanButton({ loan, box }: ExtendLoanButtonProps) {
 
   return (
     <>
-      <Button
-        size="sm"
-        variant="outline-primary"
-        className="mt-2"
+      <button
+        type="button"
+        className="btn btn--outline-primary btn--sm lending-space-top"
+
         disabled={!!blockReason}
         onClick={() => setIsExtending(true)}
       >
-        <CalendarPlus className="me-1" />
+        <CalendarPlusIcon />
         Verlengen
-      </Button>
-      {blockReason && <div className="small text-body-secondary mt-1">{blockReason}</div>}
+      </button>
+      {blockReason && <div className="text-small text-muted lending-hint">{blockReason}</div>}
 
       {isExtending && (
         <ExtendLoanModal loan={loan} box={box} onClose={() => setIsExtending(false)} />
@@ -54,20 +54,20 @@ interface LoanItemProps {
 
 function LoanItem({ loan, box, isLender, otherName }: LoanItemProps) {
   return (
-    <ListGroup.Item as="li">
-      <div className="d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <li className="lending-list__item">
+      <div className="lending-row">
         <div>
           {box ? (
-            <Link to={`/catalogue/${box.game.id}`} className="fw-semibold">
+            <Link to={`/catalogue/${box.game.id}`} className="lending-strong">
               {box.game.title}
             </Link>
           ) : (
-            <span className="fw-semibold">Doos niet meer op de uitleenlijst</span>
+            <span className="lending-strong">Doos niet meer op de uitleenlijst</span>
           )}
-          <div className="small">
+          <div className="text-small">
             {isLender ? 'Geleend door' : 'Eigenaar'}: {otherName ?? '…'}
           </div>
-          <div className="small text-body-secondary">
+          <div className="text-small text-muted">
             Van {formatDate(loan.startDate)} tot {formatDate(loan.returnDate)}
           </div>
           <LoanDueText loan={loan} />
@@ -78,7 +78,7 @@ function LoanItem({ loan, box, isLender, otherName }: LoanItemProps) {
       {isLender && !loan.returnedOn && (
         <ReturnLoanButton loan={loan} box={box} borrowerName={otherName} />
       )}
-    </ListGroup.Item>
+    </li>
   )
 }
 
@@ -109,16 +109,14 @@ function LoanSection({
   userNames,
 }: LoanSectionProps) {
   return (
-    <section className="mb-4" aria-labelledby={id}>
-      <h2 className="h5" id={id}>
+    <section className="lending-section" aria-labelledby={id}>
+      <h2 className="lending-section__title" id={id}>
         {title}
       </h2>
       {loans.length === 0 ? (
-        <Alert variant="light" className="border">
-          {emptyText}
-        </Alert>
+        <Alert variant="neutral">{emptyText}</Alert>
       ) : (
-        <ListGroup as="ul">
+        <ul className="lending-list">
           {loans.map((loan) => {
             const box = boxesById.get(loan.boxId)
             const otherId = isLender ? loan.borrowerId : box?.ownerId
@@ -132,7 +130,7 @@ function LoanSection({
               />
             )
           })}
-        </ListGroup>
+        </ul>
       )}
     </section>
   )

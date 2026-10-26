@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Alert, Button, Form, Modal } from 'react-bootstrap'
+import Alert from '../../components/Alert'
+import Modal from '../../components/Modal'
 import { Controller, useForm } from 'react-hook-form'
 import { getErrorMessage } from '../../api/errors'
 import GamePicker from '../../components/GamePicker'
@@ -42,21 +43,20 @@ export default function BoxFormModal({ box, onClose }: BoxFormModalProps) {
   }
 
   return (
-    <Modal show onHide={onClose} aria-labelledby="box-form-title">
-      <Form noValidate onSubmit={handleSubmit(onSubmit)}>
-        <Modal.Header closeButton>
-          <Modal.Title id="box-form-title">{box ? 'Doos bewerken' : 'Doos aanbieden'}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
+    <Modal title={box ? 'Doos bewerken' : 'Doos aanbieden'} onClose={onClose}>
+      <form noValidate onSubmit={handleSubmit(onSubmit)}>
+        <div className="modal__body">
           {mutation.isError && <Alert variant="danger">{getErrorMessage(mutation.error)}</Alert>}
 
-          <Form.Group className="mb-3">
-            <Form.Label htmlFor="box-game">Game</Form.Label>
+          <div className="field">
+            <label className="field__label" htmlFor="box-game">
+              Game
+            </label>
             {box ? (
-              <Form.Control
+              <input
+                className="input"
                 id="box-game"
                 readOnly
-                plaintext
                 value={`${box.game.title} (${formatEdition(box.game)})`}
               />
             ) : (
@@ -74,36 +74,40 @@ export default function BoxFormModal({ box, onClose }: BoxFormModalProps) {
                     />
                   )}
                 />
-                <Form.Text className="d-block">
-                  De game hoeft niet in je collectie te staan.
-                </Form.Text>
+                <small className="field__hint">De game hoeft niet in je collectie te staan.</small>
               </>
             )}
-          </Form.Group>
+          </div>
 
-          <Form.Group controlId="box-condition">
-            <Form.Label>Staat van de doos</Form.Label>
-            <Form.Control
-              as="textarea"
+          <div className="field">
+            <label className="field__label" htmlFor="box-condition">
+              Staat van de doos
+            </label>
+            <textarea
+              className="input"
+              id="box-condition"
               rows={3}
               placeholder="Bijv. compleet, kaarten gesleeved, hoek van de doos ingedeukt"
-              isInvalid={!!errors.condition}
+              aria-invalid={!!errors.condition}
+              aria-describedby={errors.condition ? 'box-condition-error' : undefined}
               {...register('condition')}
             />
-            <Form.Control.Feedback type="invalid">
-              {errors.condition?.message}
-            </Form.Control.Feedback>
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="outline-secondary" onClick={onClose}>
+            {errors.condition && (
+              <div id="box-condition-error" className="field__error" role="alert">
+                {errors.condition.message}
+              </div>
+            )}
+          </div>
+        </div>
+        <div className="modal__footer">
+          <button type="button" className="btn btn--outline-secondary" onClick={onClose}>
             Annuleren
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
+          </button>
+          <button className="btn btn--primary" type="submit" disabled={isSubmitting}>
             {isSubmitting ? submittingLabel : submitLabel}
-          </Button>
-        </Modal.Footer>
-      </Form>
+          </button>
+        </div>
+      </form>
     </Modal>
   )
 }

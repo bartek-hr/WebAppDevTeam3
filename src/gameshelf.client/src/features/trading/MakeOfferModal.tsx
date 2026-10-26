@@ -1,5 +1,7 @@
+import '../lending/lending.css'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Alert, Button, Form, Modal } from 'react-bootstrap'
+import Alert from '../../components/Alert'
+import Modal from '../../components/Modal'
 import { Controller, useForm } from 'react-hook-form'
 import { getErrorMessage } from '../../api/errors'
 import GamePicker from '../../components/GamePicker'
@@ -46,46 +48,45 @@ export default function MakeOfferModal({ wishlistItem, onClose }: MakeOfferModal
   const wantedGame = (
     <>
       {owner && (
-        <p className="small text-body-secondary mb-1">
+        <p className="text-small text-muted">
           Gezocht door <strong>{owner.userName}</strong>
         </p>
       )}
-      <h2 className="h5 mb-0">{game.title}</h2>
-      <div className="small text-body-secondary">{formatEdition(game)}</div>
-      {note && <p className="small mt-2 mb-0">Opmerking: {note}</p>}
+      <h2 className="lending-title">{game.title}</h2>
+      <div className="text-small text-muted">{formatEdition(game)}</div>
+      {note && <p className="text-small lending-space-top">Opmerking: {note}</p>}
     </>
   )
 
   return (
-    <Modal show onHide={onClose}>
-      <Modal.Header closeButton>
-        <Modal.Title>Bod doen</Modal.Title>
-      </Modal.Header>
+    <Modal title="Bod doen" onClose={onClose}>
       {blockReason ? (
         <>
-          <Modal.Body>
+          <div className="modal__body">
             {wantedGame}
-            <Alert variant="info" className="mt-3 mb-0">
+            <Alert variant="info" className="lending-space-top">
               {blockReason}
             </Alert>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="outline-secondary" onClick={onClose}>
+          </div>
+          <div className="modal__footer">
+            <button type="button" className="btn btn--outline-secondary" onClick={onClose}>
               Sluiten
-            </Button>
-          </Modal.Footer>
+            </button>
+          </div>
         </>
       ) : (
-        <Form noValidate onSubmit={handleSubmit(onSubmit)}>
-          <Modal.Body>
+        <form noValidate onSubmit={handleSubmit(onSubmit)}>
+          <div className="modal__body">
             {wantedGame}
             {createOffer.isError && (
-              <Alert variant="danger" className="mt-3">
+              <Alert variant="danger" className="lending-space-top">
                 {getErrorMessage(createOffer.error)}
               </Alert>
             )}
-            <Form.Group className="mt-3">
-              <Form.Label htmlFor="askedGameId">Welke game vraag je terug?</Form.Label>
+            <div className="field">
+              <label className="field__label" htmlFor="askedGameId">
+                Welke game vraag je terug?
+              </label>
               <Controller
                 name="askedGameId"
                 control={control}
@@ -101,20 +102,20 @@ export default function MakeOfferModal({ wishlistItem, onClose }: MakeOfferModal
                   />
                 )}
               />
-            </Form.Group>
-            <p className="small text-body-secondary mt-3 mb-0">
+            </div>
+            <p className="text-small text-muted lending-space-top">
               Je ruilt altijd game tegen game, zonder geld.
             </p>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="outline-secondary" onClick={onClose}>
+          </div>
+          <div className="modal__footer">
+            <button type="button" className="btn btn--outline-secondary" onClick={onClose}>
               Annuleren
-            </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            </button>
+            <button className="btn btn--primary" type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Bezig met versturen…' : 'Bod doen'}
-            </Button>
-          </Modal.Footer>
-        </Form>
+            </button>
+          </div>
+        </form>
       )}
     </Modal>
   )

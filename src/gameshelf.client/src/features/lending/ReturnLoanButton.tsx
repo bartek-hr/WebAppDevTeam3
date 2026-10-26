@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { Button } from 'react-bootstrap'
-import { BoxArrowInLeft } from 'react-bootstrap-icons'
+import { ReturnIcon } from '../../components/icons'
 import type { Box, Loan } from '../../types'
 import ReturnLoanModal from './ReturnLoanModal'
 
@@ -22,15 +21,15 @@ export default function ReturnLoanButton({
 
   return (
     <>
-      <Button
-        size="sm"
-        variant="outline-success"
-        className="mt-2"
+      <button
+        type="button"
+        className="btn btn--outline-success btn--sm lending-space-top"
+
         onClick={() => setIsReturning(true)}
       >
-        <BoxArrowInLeft className="me-1" />
+        <ReturnIcon />
         {label}
-      </Button>
+      </button>
 
       {isReturning && (
         <ReturnLoanModal
