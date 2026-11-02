@@ -1,124 +1,277 @@
+/*
+ * Mijn biedingen: per richting één lijst waarin elk bod een ruil is.
+ * Het ruilblok is het enige opvallende onderdeel; blauw markeert wat jij krijgt,
+ * grijs wat jij weggeeft. Al het andere blijft rustig.
+ */
 .my-offers {
-  --offers-page-title-size: 1.75rem;
-  --offers-heading-line-height: 1.3;
-  --offers-intro-width: 72ch;
-  --offers-date-width: 8rem;
-  --offers-validity-width: 10rem;
+  --offers-lead-width: 68ch;
+  --offers-side-rule: 3px;
+  --offers-swap-size: 1.25rem;
+  --offers-party-width: 12rem;
+  --offers-terms-width: 10.5rem;
+  --offers-swap-icon: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 8h15l-4-4M20 16H5l4 4'/%3E%3C/svg%3E");
 }
 
-.my-offers__page-header {
-  margin-bottom: var(--space-2);
-}
-
-.my-offers__page-header h1 {
-  font-size: var(--offers-page-title-size);
-  font-weight: 600;
-  line-height: var(--offers-heading-line-height);
-}
+/* ---------- Paginakop ---------- */
 
 .my-offers__intro {
-  max-width: var(--offers-intro-width);
   margin-bottom: var(--space-4);
-  font-size: var(--font-size-sm);
-}
-
-.my-offers__section {
-  margin-block: var(--space-4);
-}
-
-.my-offers__section > h2 {
-  margin-bottom: var(--space-3);
-  font-size: var(--font-size-lg);
-  font-weight: 600;
-  line-height: var(--offers-heading-line-height);
-}
-
-.my-offers__list {
-  display: grid;
-  gap: var(--space-2);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.my-offers__card {
-  height: auto;
-  box-shadow: none;
-}
-
-.my-offers__body {
-  gap: var(--space-3);
-}
-
-.my-offers__header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: var(--space-2);
 }
 
 .my-offers__title {
-  min-width: 0;
-  margin: 0;
-  font-size: inherit;
-  font-weight: 600;
-  line-height: var(--line-height);
-  overflow-wrap: anywhere;
-}
-
-.my-offers__details {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-3);
-  margin: 0;
-}
-
-.my-offers__details > div {
-  min-width: 0;
-  overflow-wrap: anywhere;
-}
-
-.my-offers__details > div:nth-child(-n + 2) {
-  grid-column: 1 / -1;
-}
-
-.my-offers__details dt {
   margin-bottom: var(--space-1);
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+.my-offers__lead {
+  max-width: var(--offers-lead-width);
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* ---------- Secties ---------- */
+
+.my-offers__section + .my-offers__section {
+  margin-top: var(--space-5);
+}
+
+.my-offers__section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: var(--space-3);
+  row-gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.my-offers__section-title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.my-offers__count {
+  color: var(--color-text-muted);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+
+.my-offers__section-description {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* Eén paneel per richting, biedingen gescheiden door een lijn */
+.my-offers__ledger {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.my-offers__ledger > li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+/* ---------- Eén bod ---------- */
+
+.my-offers__offer {
+  display: grid;
+  grid-template-areas:
+    'party'
+    'exchange'
+    'terms';
+  gap: var(--space-3);
+  padding: var(--space-3);
+}
+
+.my-offers__offer dl,
+.my-offers__offer dd {
+  margin: 0;
+}
+
+.my-offers__offer dt {
   color: var(--color-text-muted);
   font-size: var(--font-size-sm);
   font-weight: 400;
 }
 
-.my-offers__details dd {
+/* Tegenpartij en status */
+.my-offers__party {
+  grid-area: party;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.my-offers__party-name {
+  min-width: 0;
   margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: var(--line-height);
+  overflow-wrap: anywhere;
 }
 
-.my-offers__details time {
-  white-space: nowrap;
-  font-variant-numeric: tabular-nums;
+/* Het ruilblok: twee games met een ruilteken ertussen */
+.my-offers__exchange {
+  grid-area: exchange;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-2);
+  align-items: stretch;
 }
 
-.my-offers__deadline {
+.my-offers__exchange::before {
+  content: '';
+  order: 2;
+  justify-self: start;
+  width: var(--offers-swap-size);
+  height: var(--offers-swap-size);
+  margin-inline-start: var(--space-3);
+  background-color: var(--color-text-muted);
+  mask: var(--offers-swap-icon) center / contain no-repeat;
+  rotate: 90deg;
+}
+
+.my-offers__side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-bg);
+  border-left: var(--offers-side-rule) solid var(--color-border-strong);
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.my-offers__side:first-child {
+  order: 1;
+}
+
+.my-offers__side:last-child {
+  order: 3;
+}
+
+.my-offers__side--in {
+  border-left-color: var(--color-primary);
+}
+
+.my-offers__side dd {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.my-offers__game {
+  font-weight: 600;
+}
+
+.my-offers__edition {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.my-offers__fulfilled {
+  margin-top: var(--space-1);
+}
+
+/* Datum en geldigheid */
+.my-offers__terms {
+  grid-area: terms;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.my-offers__terms dd {
   display: flex;
   flex-direction: column;
 }
 
-.my-offers__fulfilled {
-  align-self: flex-start;
+.my-offers__terms time {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
+.my-offers__state {
+  font-weight: 600;
+}
+
+.my-offers__state--valid {
+  color: var(--color-success-text);
+}
+
+.my-offers__state--expired {
+  color: var(--color-warning-text);
+}
+
+.my-offers__state--closed {
+  color: var(--color-text-muted);
+}
+
+.my-offers__until {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* ---------- Breder: games naast elkaar ---------- */
+
 @media (min-width: 576px) {
-  .my-offers__details > div:nth-child(-n + 2) {
-    grid-column: auto;
+  .my-offers__exchange {
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .my-offers__exchange::before {
+    justify-self: center;
+    margin-inline-start: 0;
+    rotate: none;
+  }
+
+  .my-offers__side {
+    align-self: stretch;
+  }
+
+  .my-offers__terms {
+    display: flex;
+    flex-wrap: wrap;
+    column-gap: var(--space-5);
+    row-gap: var(--space-2);
   }
 }
 
+/* ---------- Laptop: tegenpartij, ruil en termijn in drie kolommen ---------- */
+
 @media (min-width: 992px) {
-  .my-offers__details {
-    grid-template-columns: repeat(2, minmax(0, 1fr)) var(--offers-date-width) var(
-        --offers-validity-width
-      );
+  .my-offers__offer {
+    grid-template-columns: var(--offers-party-width) minmax(0, 1fr) var(--offers-terms-width);
+    grid-template-areas: 'party exchange terms';
     column-gap: var(--space-4);
+    align-items: start;
+  }
+
+  .my-offers__party {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: var(--space-1);
+  }
+
+  .my-offers__terms {
+    flex-direction: column;
+    gap: var(--space-2);
   }
 }
