@@ -50,10 +50,10 @@ function OfferList({
           {offers.map((offer) => {
             const status = statuses[offer.status]
             return (
-              <li key={offer.id} className="card">
-                <article className="card__body">
+              <li key={offer.id} className="card my-offers__card">
+                <article className="card__body my-offers__body">
                   <div className="my-offers__header">
-                    <h3 className="card__title">
+                    <h3 className="card__title my-offers__title">
                       {received ? 'Bod van ' : 'Bod aan '}
                       <Link to={`/members/${received ? offer.offeredBy.id : offer.owner.id}`}>
                         {received ? offer.offeredBy.userName : offer.owner.userName}
@@ -90,7 +90,7 @@ function OfferList({
                           : offer.isValid
                             ? 'Geldig'
                             : 'Verlopen'}
-                        <div className="text-muted text-small">
+                        <div className="text-muted text-small my-offers__deadline">
                           {offer.status === 'Open' && !offer.isValid
                             ? 'Geldig t/m '
                             : 'Geldigheid t/m '}
@@ -102,7 +102,9 @@ function OfferList({
                     </div>
                   </dl>
                   {offer.wishlistItem.isFulfilled && (
-                    <span className="badge badge--success">Verlanglijstitem vervuld</span>
+                    <span className="badge badge--success my-offers__fulfilled">
+                      Verlanglijstitem vervuld
+                    </span>
                   )}
                 </article>
               </li>
@@ -119,11 +121,11 @@ export default function MyOffersPage() {
   const { data: offers = [], isPending, isError, error, refetch } = useOffers(member?.id)
 
   return (
-    <>
-      <div className="page-header">
+    <div className="my-offers">
+      <div className="page-header my-offers__page-header">
         <h1>Mijn biedingen</h1>
       </div>
-      <p className="text-muted">
+      <p className="text-muted my-offers__intro">
         Bekijk je ontvangen en verstuurde biedingen. Een open bod is {OFFER_VALIDITY_DAYS} dagen
         geldig, tot en met de vermelde datum. Biedingen accepteren, afwijzen en annuleren volgt
         later.
@@ -153,6 +155,6 @@ export default function MyOffersPage() {
           />
         </>
       )}
-    </>
+    </div>
   )
 }
