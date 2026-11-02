@@ -1,8 +1,9 @@
-import { format } from 'date-fns'
+import { format, subDays } from 'date-fns'
 import { http, HttpResponse, type HttpHandler } from 'msw'
 import type { Offer } from '../../types'
-import { getCurrentMember } from '../auth/mocks'
+import { getCurrentMember, members } from '../auth/mocks'
 import { games } from '../catalogue/mocks'
+import { offerWishlistFixtures } from './mockWishlistFixtures'
 import { isOfferValid, offerSchema } from './tradingRules'
 
 // Eigenaar: Rayell. Nep-endpoints voor deze feature (alleen actief als VITE_USE_MOCKS=true).
@@ -10,8 +11,69 @@ import { isOfferValid, offerSchema } from './tradingRules'
 // Wat de backend opslaat: isValid wordt per response berekend
 type OfferRecord = Omit<Offer, 'isValid'>
 
-// Nog leeg: seed-biedingen hebben de verlanglijst-items uit de verlanglijst-mocks nodig
-const seedOffers = (): OfferRecord[] => []
+// Relatieve datums houden geldige en verlopen voorbeelden bruikbaar in de demo.
+const seedOffers = (): OfferRecord[] => {
+  const date = (daysAgo: number) => format(subDays(new Date(), daysAgo), 'yyyy-MM-dd')
+  return [
+    {
+      id: 1,
+      wishlistItemId: 1901,
+      offeredById: 'm2',
+      askedGame: games[14],
+      createdOn: date(1),
+      status: 'Open',
+    },
+    {
+      id: 2,
+      wishlistItemId: 1901,
+      offeredById: 'm3',
+      askedGame: games[2],
+      createdOn: date(15),
+      status: 'Open',
+    },
+    {
+      id: 3,
+      wishlistItemId: 1903,
+      offeredById: 'm4',
+      askedGame: games[10],
+      createdOn: date(5),
+      status: 'Accepted',
+    },
+    {
+      id: 4,
+      wishlistItemId: 1902,
+      offeredById: 'm1',
+      askedGame: games[11],
+      createdOn: date(2),
+      status: 'Open',
+    },
+    {
+      id: 5,
+      wishlistItemId: 1904,
+      offeredById: 'm1',
+      askedGame: games[12],
+      createdOn: date(7),
+      status: 'Rejected',
+    },
+    {
+      id: 6,
+      wishlistItemId: 1902,
+      offeredById: 'm1',
+      askedGame: games[13],
+      createdOn: date(4),
+      status: 'Cancelled',
+    },
+    // Een bod waar m1 niet bij betrokken is, voor de afscherming van het overzicht.
+    {
+      id: 7,
+      wishlistItemId: 1904,
+      offeredById: 'm4',
+      askedGame: games[10],
+      createdOn: date(3),
+      status: 'Open',
+    },
+  ]
+}
 
 export const offers: OfferRecord[] = seedOffers()
 
@@ -23,6 +85,22 @@ export function resetTradingMocks() {
 const toOfferDto = (offer: OfferRecord): Offer => ({ ...offer, isValid: isOfferValid(offer) })
 
 export const tradingHandlers: HttpHandler[] = [
+  http.get('/api/offers', ({ request }) => {
+    const me = getCurrentMember(request)
+    if (!me) return HttpResponse.json({ message: 'Niet ingelogd' }, { status: 401 })
+
+    const overview = offers.flatMap((offer) => {
+      const wishlistItem = offerWishlistFixtures.find((item) => item.id === offer.wishlistItemId)
+      if (!wishlistItem || (wishlistItem.ownerId !== me.id && offer.offeredById !== me.id))
+        return []
+      const owner = members.find((member) => member.id === wishlistItem.ownerId)
+      const offeredBy = members.find((member) => member.id === offer.offeredById)
+      if (!owner || !offeredBy) return []
+      return [{ ...toOfferDto(offer), wishlistItem, owner, offeredBy }]
+    })
+    overview.sort((a, b) => b.createdOn.localeCompare(a.createdOn) || b.id - a.id)
+    return HttpResponse.json(overview)
+  }),
   http.post('/api/wishlist-items/:id/offers', async ({ request, params }) => {
     const me = getCurrentMember(request)
     if (!me) {

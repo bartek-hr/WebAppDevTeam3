@@ -71,12 +71,14 @@ test('doet een bod en sluit de modal', async () => {
   await user.click(screen.getByRole('button', { name: 'Bod doen' }))
 
   await vi.waitFor(() => expect(onClose).toHaveBeenCalled())
-  expect(offers).toEqual([
-    expect.objectContaining({
-      wishlistItemId: 1,
-      offeredById: 'm2',
-      askedGame: expect.objectContaining({ title: 'Azul' }),
-      status: 'Open',
-    }),
-  ])
+  expect(offers).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        wishlistItemId: 1,
+        offeredById: 'm2',
+        askedGame: expect.objectContaining({ title: 'Azul' }),
+        status: 'Open',
+      }),
+    ]),
+  )
 })
