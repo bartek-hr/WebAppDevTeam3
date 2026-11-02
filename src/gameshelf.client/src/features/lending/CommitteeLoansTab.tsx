@@ -1,4 +1,4 @@
-import { Alert, ListGroup } from 'react-bootstrap'
+import Alert from '../../components/Alert'
 import { Link } from 'react-router-dom'
 import { getErrorMessage } from '../../api/errors'
 import PageSpinner from '../../components/PageSpinner'
@@ -19,19 +19,21 @@ interface CommitteeLoanItemProps {
 
 function CommitteeLoanItem({ loan, box, ownerName, borrowerName }: CommitteeLoanItemProps) {
   return (
-    <ListGroup.Item as="li" variant={loan.isLate ? 'danger' : undefined}>
-      <div className="d-flex flex-wrap align-items-center justify-content-between gap-2">
+    <li
+      className={loan.isLate ? 'lending-list__item lending-list__item--late' : 'lending-list__item'}
+    >
+      <div className="lending-row">
         <div>
           {box ? (
-            <Link to={`/catalogue/${box.game.id}`} className="fw-semibold">
+            <Link to={`/catalogue/${box.game.id}`} className="lending-strong">
               {box.game.title}
             </Link>
           ) : (
-            <span className="fw-semibold">Doos niet meer op de uitleenlijst</span>
+            <span className="lending-strong">Doos niet meer op de uitleenlijst</span>
           )}
-          <div className="small">Eigenaar: {ownerName ?? '…'}</div>
-          <div className="small">Geleend door: {borrowerName ?? '…'}</div>
-          <div className="small text-body-secondary">
+          <div className="text-small">Eigenaar: {ownerName ?? '…'}</div>
+          <div className="text-small">Geleend door: {borrowerName ?? '…'}</div>
+          <div className="text-small text-muted">
             Van {formatDate(loan.startDate)} tot {formatDate(loan.returnDate)}
           </div>
           <LoanDueText loan={loan} />
@@ -39,7 +41,7 @@ function CommitteeLoanItem({ loan, box, ownerName, borrowerName }: CommitteeLoan
         <LoanStatusBadge loan={loan} />
       </div>
       <ReturnLoanButton loan={loan} box={box} borrowerName={borrowerName} label="Terug ontvangen" />
-    </ListGroup.Item>
+    </li>
   )
 }
 
@@ -64,12 +66,12 @@ export default function CommitteeLoansTab() {
   // De API levert de te late leningen al bovenaan
   return (
     <>
-      <p className="small text-body-secondary">
+      <p className="text-small text-muted">
         Is de eigenaar er niet op de clubavond, dan neemt het bestuur de doos in ontvangst. Te late
         leningen staan bovenaan.
       </p>
       {loans.data?.length ? (
-        <ListGroup as="ul">
+        <ul className="lending-list">
           {loans.data.map((loan) => {
             const box = boxesById.get(loan.boxId)
             return (
@@ -82,11 +84,9 @@ export default function CommitteeLoansTab() {
               />
             )
           })}
-        </ListGroup>
+        </ul>
       ) : (
-        <Alert variant="light" className="border">
-          Er zijn geen lopende leningen.
-        </Alert>
+        <Alert variant="neutral">Er zijn geen lopende leningen.</Alert>
       )}
     </>
   )

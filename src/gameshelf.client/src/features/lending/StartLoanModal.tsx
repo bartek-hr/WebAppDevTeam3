@@ -1,5 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Alert, Button, Form, Modal } from 'react-bootstrap'
+import Alert from '../../components/Alert'
+import Modal from '../../components/Modal'
 import { useForm } from 'react-hook-form'
 import { getErrorMessage } from '../../api/errors'
 import type { Box, LoanRequest } from '../../types'
@@ -48,44 +49,48 @@ export default function StartLoanModal({
   }
 
   return (
-    <Modal show onHide={onClose} aria-labelledby="start-loan-title">
-      <Form noValidate onSubmit={handleSubmit(onSubmit)}>
-        <Modal.Header closeButton>
-          <Modal.Title id="start-loan-title">Lening starten</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
+    <Modal title="Lening starten" onClose={onClose}>
+      <form noValidate onSubmit={handleSubmit(onSubmit)}>
+        <div className="modal__body">
           {startLoan.isError && <Alert variant="danger">{getErrorMessage(startLoan.error)}</Alert>}
           <p>
             Start de lening als je {box.game.title} ({formatEdition(box.game)}) op de clubavond aan{' '}
             {borrowerName ?? '…'} geeft. De lening gaat vandaag in.
           </p>
 
-          <Form.Group controlId="start-loan-return-date">
-            <Form.Label>Inleverdatum</Form.Label>
-            <Form.Control
+          <div className="field">
+            <label className="field__label" htmlFor="start-loan-return-date">
+              Inleverdatum
+            </label>
+            <input
+              className="input"
+              id="start-loan-return-date"
               type="date"
               min={bounds.earliest}
               max={bounds.latest}
-              isInvalid={!!errors.returnDate}
+              aria-invalid={!!errors.returnDate}
+              aria-describedby={errors.returnDate ? 'start-loan-return-date-error' : undefined}
               {...register('returnDate')}
             />
-            <Form.Control.Feedback type="invalid">
-              {errors.returnDate?.message}
-            </Form.Control.Feedback>
-            <Form.Text>
+            {errors.returnDate && (
+              <div id="start-loan-return-date-error" className="field__error" role="alert">
+                {errors.returnDate.message}
+              </div>
+            )}
+            <small className="field__hint">
               Uiterlijk {formatDate(bounds.latest)}, {MAX_LOAN_DAYS} dagen na vandaag.
-            </Form.Text>
-          </Form.Group>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="outline-secondary" onClick={onClose}>
+            </small>
+          </div>
+        </div>
+        <div className="modal__footer">
+          <button type="button" className="btn btn--outline-secondary" onClick={onClose}>
             Annuleren
-          </Button>
-          <Button type="submit" disabled={isSubmitting}>
+          </button>
+          <button className="btn btn--primary" type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Bezig met starten…' : 'Lening starten'}
-          </Button>
-        </Modal.Footer>
-      </Form>
+          </button>
+        </div>
+      </form>
     </Modal>
   )
 }

@@ -1,4 +1,5 @@
-import { Alert, Button, Modal } from 'react-bootstrap'
+import Alert from '../../components/Alert'
+import Modal from '../../components/Modal'
 import { getErrorMessage } from '../../api/errors'
 import type { Box, Loan } from '../../types'
 import { useReturnLoan } from './api'
@@ -21,29 +22,28 @@ export default function ReturnLoanModal({
   const returnLoan = useReturnLoan()
 
   return (
-    <Modal show onHide={onClose} aria-labelledby="return-loan-title">
-      <Modal.Header closeButton>
-        <Modal.Title id="return-loan-title">Doos teruggebracht</Modal.Title>
-      </Modal.Header>
-      <Modal.Body>
+    <Modal title="Doos teruggebracht" onClose={onClose}>
+      <div className="modal__body">
         {returnLoan.isError && <Alert variant="danger">{getErrorMessage(returnLoan.error)}</Alert>}
-        <p className="mb-0">
+        <p className="lending-no-margin">
           Heeft {borrowerName ?? '…'} {box?.game.title ?? 'de doos'} teruggebracht? Daarna is de
           doos weer beschikbaar op de uitleenlijst.
         </p>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button variant="outline-secondary" onClick={onClose}>
+      </div>
+      <div className="modal__footer">
+        <button type="button" className="btn btn--outline-secondary" onClick={onClose}>
           Annuleren
-        </Button>
-        <Button
-          variant="success"
+        </button>
+        <button
+          type="button"
+          className="btn btn--success"
+
           disabled={returnLoan.isPending}
           onClick={() => returnLoan.mutate(loan.id, { onSuccess: onClose })}
         >
           {returnLoan.isPending ? 'Bezig met registreren…' : confirmLabel}
-        </Button>
-      </Modal.Footer>
+        </button>
+      </div>
     </Modal>
   )
 }

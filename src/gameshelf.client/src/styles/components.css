@@ -788,3 +788,17 @@ body:has(.modal[open]) {
     transform: translateY(0.25rem);
   }
 }
+
+.btn--success {
+  background: var(--color-success);
+  border-color: var(--color-success);
+  color: var(--color-text-inverse);
+}
+.btn--success:hover:not(:disabled) {
+  background: var(--color-success-hover);
+  border-color: var(--color-success-hover);
+}
+.badge--info {
+  background: var(--color-info-subtle);
+  color: var(--color-info-text);
+}

@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { Button } from 'react-bootstrap'
-import { PencilSquare, Trash } from 'react-bootstrap-icons'
+import { EditIcon, TrashIcon } from '../../components/icons'
 import type { Box } from '../../types'
 import BoxFormModal from './BoxFormModal'
 import RemoveBoxModal from './RemoveBoxModal'
@@ -16,28 +15,32 @@ export default function BoxCardActions({ box }: BoxCardActionsProps) {
 
   return (
     <>
-      <div className="d-flex flex-wrap gap-2 mt-2">
-        <Button
-          size="sm"
-          variant="outline-primary"
+      <div className="cluster lending-space-top">
+        <button
+          type="button"
+          className="btn btn--outline-primary btn--sm"
+
           disabled={box.isOnLoan}
           onClick={() => setIsEditing(true)}
         >
-          <PencilSquare className="me-1" />
+          <EditIcon />
           Bewerken
-        </Button>
-        <Button
-          size="sm"
-          variant="outline-danger"
+        </button>
+        <button
+          type="button"
+          className="btn btn--outline-danger btn--sm"
+
           disabled={box.isOnLoan}
           onClick={() => setIsRemoving(true)}
         >
-          <Trash className="me-1" />
+          <TrashIcon />
           Van de lijst halen
-        </Button>
+        </button>
       </div>
       {box.isOnLoan && (
-        <div className="small text-body-secondary mt-1">Kan niet zolang de doos is uitgeleend</div>
+        <div className="text-small text-muted lending-hint">
+          Kan niet zolang de doos is uitgeleend
+        </div>
       )}
 
       {isEditing && <BoxFormModal box={box} onClose={() => setIsEditing(false)} />}

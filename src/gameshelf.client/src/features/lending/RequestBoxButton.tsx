@@ -1,5 +1,5 @@
-import { Alert, Button } from 'react-bootstrap'
-import { Check2, Send } from 'react-bootstrap-icons'
+import Alert from '../../components/Alert'
+import { CheckIcon, SendIcon } from '../../components/icons'
 import { getErrorMessage } from '../../api/errors'
 import type { Box } from '../../types'
 import { useRequestBox } from './api'
@@ -16,12 +16,12 @@ export default function RequestBoxButton({ box, isRequested }: RequestBoxButtonP
 
   if (isRequested) {
     return (
-      <div className="mt-2">
-        <Button size="sm" variant="outline-secondary" disabled>
-          <Check2 className="me-1" />
+      <div className="lending-space-top">
+        <button type="button" className="btn btn--outline-secondary btn--sm" disabled>
+          <CheckIcon />
           Aangevraagd
-        </Button>
-        <div className="small text-body-secondary mt-1">
+        </button>
+        <div className="text-small text-muted lending-hint">
           De eigenaar moet je aanvraag nog beoordelen
         </div>
       </div>
@@ -29,18 +29,19 @@ export default function RequestBoxButton({ box, isRequested }: RequestBoxButtonP
   }
 
   return (
-    <div className="mt-2">
-      <Button
-        size="sm"
-        variant="outline-primary"
+    <div className="lending-space-top">
+      <button
+        type="button"
+        className="btn btn--outline-primary btn--sm"
+
         disabled={requestBox.isPending}
         onClick={() => requestBox.mutate(box.id)}
       >
-        <Send className="me-1" />
+        <SendIcon />
         {requestBox.isPending ? 'Bezig met aanvragen…' : 'Aanvragen'}
-      </Button>
+      </button>
       {requestBox.isError && (
-        <Alert variant="danger" className="small p-2 mt-2 mb-0">
+        <Alert variant="danger" className="text-small lending-space-top">
           {getErrorMessage(requestBox.error)}
         </Alert>
       )}

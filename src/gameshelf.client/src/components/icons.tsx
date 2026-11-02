@@ -169,3 +169,36 @@ export function XIcon(props: IconProps) {
     </Icon>
   )
 }
+
+export function CheckIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M20 6 9 17l-5-5" />
+    </Icon>
+  )
+}
+
+export function CalendarPlusIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <rect x="3" y="5" width="18" height="16" rx="2" />
+      <path d="M16 3v4M8 3v4M3 10h18M12 13v5M9.5 15.5h5" />
+    </Icon>
+  )
+}
+
+export function ReturnIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l-5-5 5-5M5 12h11" />
+    </Icon>
+  )
+}
+
+export function SendIcon(props: IconProps) {
+  return (
+    <Icon {...props}>
+      <path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z" />
+    </Icon>
+  )
+}
