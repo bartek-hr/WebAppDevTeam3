@@ -4,19 +4,24 @@ Deze branch levert alleen het overzicht op `/offers`: ontvangen en verstuurde bi
 status, geldigheid, de twee game-edities en het andere lid. Accepteren, afwijzen, annuleren,
 het vervullen van items en actiehooks voor #27 vallen buiten deze sprint.
 
-## Gedeeld mockcontract (#25 / #26)
+## Afhankelijkheid van #25
 
-De branch gebruikt `wishlistItems` direct uit `features/wishlist/mockStore.ts`.
-Het contract is ongewijzigd overgenomen via commit
-`50ffd44f521a8293f00b2905f3e109b5e3adb127` van #26; de tijdelijke #19-fixtures zijn verwijderd.
-De store wordt hier niet uitgebreid. De wishlistpagina en CRUD blijven werk voor bartek-hr
-in #25; de gedeelde endpoint/hook en het overzicht van alle verlanglijsten blijven bij #26.
+#25 is toegewezen aan bartek-hr. Deze branch implementeert geen verlanglijstpagina, CRUD,
+endpoint of gedeelde verlanglijst-store. `features/trading/mockWishlistFixtures.ts` bevat
+uitsluitend tijdelijke fixtures voor #19, met IDs 1901–1904. Deze fixtures zijn geen
+vervangende implementatie van #25 en worden niet door verlanglijstpagina's gebruikt.
+De fixtures zijn alleen-lezen en uitsluitend bedoeld voor de #19-preview. Alleen het bestaande
+`WishlistItem`-type is een vast contract; definitieve IDs, store en querycontract komen van
+bartek-hr. Het eerder aangeboden contract uit `50ffd44` is ingetrokken en teruggedraaid.
 
-De seed-biedingen verwijzen naar de afgesproken IDs 1, 3, 4 en 5. Het geaccepteerde bod
-hoort bij het vervulde item 4 van m2. Daardoor ziet m1 twee ontvangen en vier verstuurde
-biedingen. Nieuwe biedingen op alle zes gedeelde items worden nu ook gekoppeld.
-Een routejourney controleert dit met een nieuw bod op item 6. Er zijn geen biedingsacties
-of aanvullende controles aan het bestaande POST-endpoint toegevoegd.
+Na oplevering van #25 moet het biedingenoverzicht diens gedeelde mockitems gebruiken:
+
+- Vervang de import van `offerWishlistFixtures` in `trading/mocks.ts` door de afgesproken
+  gedeelde bron en stem `wishlistItemId` in de seed-biedingen af op de echte mockitems.
+- Controleer met #26 dat beide overzichten dezelfde items/IDs gebruiken.
+- Controleer dat nieuw aangemaakte biedingen op die items in het overzicht verschijnen.
+  Nu worden alleen biedingen op de tijdelijke #19-items gekoppeld; andere item-IDs zijn
+  bewust nog niet geïntegreerd. Het bestaande POST-endpoint is niet uitgebreid.
 
 `GET /api/offers` vereist een ingelogd mocklid en retourneert alleen diens ontvangen en
 verstuurde biedingen, nieuwste eerst. De response verrijkt het bestaande `Offer` met

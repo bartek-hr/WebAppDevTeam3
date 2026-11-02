@@ -3,7 +3,7 @@ import { http, HttpResponse, type HttpHandler } from 'msw'
 import type { Offer } from '../../types'
 import { getCurrentMember, members } from '../auth/mocks'
 import { games } from '../catalogue/mocks'
-import { wishlistItems } from '../wishlist/mockStore'
+import { offerWishlistFixtures } from './mockWishlistFixtures'
 import { isOfferValid, offerSchema } from './tradingRules'
 
 // Eigenaar: Rayell. Nep-endpoints voor deze feature (alleen actief als VITE_USE_MOCKS=true).
@@ -17,7 +17,7 @@ const seedOffers = (): OfferRecord[] => {
   return [
     {
       id: 1,
-      wishlistItemId: 1,
+      wishlistItemId: 1901,
       offeredById: 'm2',
       askedGame: games[14],
       createdOn: date(1),
@@ -25,7 +25,7 @@ const seedOffers = (): OfferRecord[] => {
     },
     {
       id: 2,
-      wishlistItemId: 1,
+      wishlistItemId: 1901,
       offeredById: 'm3',
       askedGame: games[2],
       createdOn: date(15),
@@ -33,15 +33,15 @@ const seedOffers = (): OfferRecord[] => {
     },
     {
       id: 3,
-      wishlistItemId: 4,
-      offeredById: 'm1',
+      wishlistItemId: 1903,
+      offeredById: 'm4',
       askedGame: games[10],
       createdOn: date(5),
       status: 'Accepted',
     },
     {
       id: 4,
-      wishlistItemId: 3,
+      wishlistItemId: 1902,
       offeredById: 'm1',
       askedGame: games[11],
       createdOn: date(2),
@@ -49,7 +49,7 @@ const seedOffers = (): OfferRecord[] => {
     },
     {
       id: 5,
-      wishlistItemId: 5,
+      wishlistItemId: 1904,
       offeredById: 'm1',
       askedGame: games[12],
       createdOn: date(7),
@@ -57,7 +57,7 @@ const seedOffers = (): OfferRecord[] => {
     },
     {
       id: 6,
-      wishlistItemId: 3,
+      wishlistItemId: 1902,
       offeredById: 'm1',
       askedGame: games[13],
       createdOn: date(4),
@@ -66,7 +66,7 @@ const seedOffers = (): OfferRecord[] => {
     // Een bod waar m1 niet bij betrokken is, voor de afscherming van het overzicht.
     {
       id: 7,
-      wishlistItemId: 5,
+      wishlistItemId: 1904,
       offeredById: 'm4',
       askedGame: games[10],
       createdOn: date(3),
@@ -90,7 +90,7 @@ export const tradingHandlers: HttpHandler[] = [
     if (!me) return HttpResponse.json({ message: 'Niet ingelogd' }, { status: 401 })
 
     const overview = offers.flatMap((offer) => {
-      const wishlistItem = wishlistItems.find((item) => item.id === offer.wishlistItemId)
+      const wishlistItem = offerWishlistFixtures.find((item) => item.id === offer.wishlistItemId)
       if (!wishlistItem || (wishlistItem.ownerId !== me.id && offer.offeredById !== me.id))
         return []
       const owner = members.find((member) => member.id === wishlistItem.ownerId)
