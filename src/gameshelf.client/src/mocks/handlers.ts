@@ -6,6 +6,7 @@ import { sessionsHandlers } from '../features/sessions/mocks'
 import { shelvesHandlers } from '../features/shelves/mocks'
 import { tradingHandlers } from '../features/trading/mocks'
 import { wishlistHandlers } from '../features/wishlist/mocks'
+import { wishlistsPreviewHandlers } from '../features/wishlist/wishlistsPreviewMocks'
 
 // Iedere feature beheert zijn eigen nep-endpoints in features/<feature>/mocks.ts
 export const handlers = [
@@ -17,4 +18,5 @@ export const handlers = [
   ...tradingHandlers,
   ...sessionsHandlers,
   ...wishlistHandlers,
+  ...wishlistsPreviewHandlers,
 ]
